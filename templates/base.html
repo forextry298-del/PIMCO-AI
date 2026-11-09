@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#061B2D">
-<title>Amazon</title>
+<title>PIMCO AI</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='bill-gold-2') }}">
 </head>
 <body class="{{ 'home-page' if request.endpoint == 'home' else ('my-page' if request.endpoint == 'my' else ('team-page' if request.endpoint == 'team' else ('income-page' if request.endpoint == 'income' else ('bill-page' if request.endpoint == 'bill' else '')))) }}">

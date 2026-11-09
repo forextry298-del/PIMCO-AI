@@ -1,23 +1,23 @@
 {% extends "base.html" %}{% block content %}
 {% if show_login_notice %}
-<div class="amazon-welcome-overlay" id="amazonWelcomeOverlay" role="dialog" aria-modal="true" aria-labelledby="amazonNoticeTitle">
-  <section class="amazon-welcome-popup">
-    <div class="amazon-popup-topline"><span class="amazon-popup-brand-mark">A</span><span class="amazon-popup-brand">AMAZON</span><span class="amazon-popup-live"><i></i> NOTICE</span></div>
-    <button class="amazon-popup-close" id="amazonPopupClose" type="button" aria-label="Close notification">&times;</button>
-    <div class="amazon-popup-heading">
-      <div class="amazon-popup-bell" aria-hidden="true">
+<div class="pimco-welcome-overlay" id="amazonWelcomeOverlay" role="dialog" aria-modal="true" aria-labelledby="amazonNoticeTitle">
+  <section class="pimco-welcome-popup">
+    <div class="pimco-popup-topline"><span class="pimco-popup-brand-mark">A</span><span class="pimco-popup-brand">PIMCO AI</span><span class="pimco-popup-live"><i></i> NOTICE</span></div>
+    <button class="pimco-popup-close" id="amazonPopupClose" type="button" aria-label="Close notification">&times;</button>
+    <div class="pimco-popup-heading">
+      <div class="pimco-popup-bell" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
       </div>
-      <div><p class="amazon-popup-eyebrow">IMPORTANT INFORMATION</p><h2 id="amazonNoticeTitle">Welcome to Amazon</h2><p class="amazon-popup-subtitle">The land of investors</p></div>
+      <div><p class="pimco-popup-eyebrow">IMPORTANT INFORMATION</p><h2 id="amazonNoticeTitle">Welcome to PIMCO AI</h2><p class="pimco-popup-subtitle">The land of investors</p></div>
     </div>
-    <p class="amazon-popup-question" id="amazonPopupQuestion"></p>
-    <div class="amazon-popup-info-list">
-      <div class="amazon-popup-info-row"><span class="amazon-popup-info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v12H3z"/><path d="M3 10h18M7 15h3"/><path d="M7 4h10"/></svg></span><div><strong>Minimum deposit</strong><p id="amazonPopupDeposit"></p></div></div>
-      <div class="amazon-popup-info-row"><span class="amazon-popup-info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m0 0 5-5m-5 5-5-5"/><path d="M4 19h16"/></svg></span><div><strong>Minimum withdrawal</strong><p id="amazonPopupWithdraw"></p></div></div>
-      <div class="amazon-popup-info-row"><span class="amazon-popup-info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><strong>Processing times</strong><p id="amazonPopupTiming"></p></div></div>
+    <p class="pimco-popup-question" id="amazonPopupQuestion"></p>
+    <div class="pimco-popup-info-list">
+      <div class="pimco-popup-info-row"><span class="pimco-popup-info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v12H3z"/><path d="M3 10h18M7 15h3"/><path d="M7 4h10"/></svg></span><div><strong>Minimum deposit</strong><p id="amazonPopupDeposit"></p></div></div>
+      <div class="pimco-popup-info-row"><span class="pimco-popup-info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m0 0 5-5m-5 5-5-5"/><path d="M4 19h16"/></svg></span><div><strong>Minimum withdrawal</strong><p id="amazonPopupWithdraw"></p></div></div>
+      <div class="pimco-popup-info-row"><span class="pimco-popup-info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><strong>Processing times</strong><p id="amazonPopupTiming"></p></div></div>
     </div>
-    <div class="amazon-popup-footer"><span class="amazon-popup-footer-mark">A</span><span id="amazonPopupBetway"></span></div>
-    <button class="amazon-popup-done" id="amazonPopupDone" type="button" hidden>Continue <span aria-hidden="true">&rarr;</span></button>
+    <div class="pimco-popup-footer"><span class="pimco-popup-footer-mark">A</span><span id="amazonPopupBetway"></span></div>
+    <button class="pimco-popup-done" id="amazonPopupDone" type="button" hidden>Continue <span aria-hidden="true">&rarr;</span></button>
   </section>
 </div>
 <script>
@@ -27,7 +27,7 @@
   const done = document.getElementById('amazonPopupDone');
   if (!overlay || !close || !done) return;
   const tasks = [
-    [document.getElementById('amazonPopupQuestion'), 'What would you like to know about Amazon?'],
+    [document.getElementById('amazonPopupQuestion'), 'What would you like to know about PIMCO AI?'],
     [document.getElementById('amazonPopupDeposit'), 'UGX 30,000. Deposits take 2 to 5 minutes to reflect in your wallet.'],
     [document.getElementById('amazonPopupWithdraw'), 'UGX 3,000. A 10% withdrawal fee applies.'],
     [document.getElementById('amazonPopupTiming'), 'Withdrawals take about 2 minutes to reflect in your mobile money account.'],
@@ -54,22 +54,22 @@
   <div class="welcome-typewriter" aria-live="polite">
     <span id="welcomeTyping"></span><span class="typing-cursor" aria-hidden="true"></span>
   </div>
-  <section class="home-hero" aria-label="Amazon AI and infrastructure highlights">
+  <section class="home-hero" aria-label="PIMCO AI AI and infrastructure highlights">
     <div class="home-carousel-track" id="homeCarouselTrack">
       <article class="home-slide">
-        <img src="{{ url_for('static', filename='images/amazon-ai-partnership.jpg') }}" alt="Human and AI partnership handshake">
-        <div class="home-slide-copy"><strong>Building Smarter Connections with Amazon AI</strong><small>Innovation • Technology • Partnership</small></div>
+        <img src="{{ url_for('static', filename='images/pimco-ai-partnership.jpg') }}" alt="Human and AI partnership handshake">
+        <div class="home-slide-copy"><strong>Building Smarter Connections with PIMCO AI AI</strong><small>Innovation • Technology • Partnership</small></div>
       </article>
       <article class="home-slide">
-        <img src="{{ url_for('static', filename='images/amazon-construction.jpg') }}" alt="Construction team working at sunset">
+        <img src="{{ url_for('static', filename='images/pimco-construction.jpg') }}" alt="Construction team working at sunset">
         <div class="home-slide-copy"><strong>Building Strong Foundations for Tomorrow</strong><small>Infrastructure • Engineering • Progress</small></div>
       </article>
       <article class="home-slide">
-        <img src="{{ url_for('static', filename='images/amazon-ai-robot.jpg') }}" alt="AI robot in a modern technology workspace">
+        <img src="{{ url_for('static', filename='images/pimco-ai-robot.jpg') }}" alt="AI robot in a modern technology workspace">
         <div class="home-slide-copy"><strong>Intelligent Technology for a Smarter Future</strong><small>AI • Automation • Innovation</small></div>
       </article>
       <article class="home-slide">
-        <img src="{{ url_for('static', filename='images/amazon-foundations.jpg') }}" alt="Steel reinforcement forming a strong foundation">
+        <img src="{{ url_for('static', filename='images/pimco-foundations.jpg') }}" alt="Steel reinforcement forming a strong foundation">
         <div class="home-slide-copy"><strong>Powering Progress from the Ground Up</strong><small>Strong Foundations • Sustainable Growth</small></div>
       </article>
     </div>
@@ -117,7 +117,7 @@
 (function () {
   const target = document.getElementById("welcomeTyping");
   if (!target) return;
-  const message = "Welcome to Amazon powered by betway";
+  const message = "Welcome to PIMCO AI powered by betway";
   let index = 0;
   let deleting = false;
   function type() {
