@@ -1,4 +1,4 @@
-========== AMAZON PROJECT ==========
+========== PIMCO AI PROJECT ==========
 PROJECT: /storage/emulated/0/Download/AMAZON_GITHUB_PUSH
 
 ========== FILES IN templates ==========
@@ -35,10 +35,10 @@ static/js/home.js
 
 ========== templates/home.html ==========
 53: <div class="home-dashboard">
-57:   <section class="home-hero" aria-label="Amazon AI and infrastructure highlights">
+57:   <section class="home-hero" aria-label="PIMCO AI AI and infrastructure highlights">
 58:     <div class="home-carousel-track" id="homeCarouselTrack">
 59:       <article class="home-slide">
-61:         <div class="home-slide-copy"><strong>Building Smarter Connections with Amazon AI</strong><small>Innovation • Technology • Partnership</small></div>
+61:         <div class="home-slide-copy"><strong>Building Smarter Connections with PIMCO AI AI</strong><small>Innovation • Technology • Partnership</small></div>
 63:       <article class="home-slide">
 65:         <div class="home-slide-copy"><strong>Building Strong Foundations for Tomorrow</strong><small>Infrastructure • Engineering • Progress</small></div>
 67:       <article class="home-slide">

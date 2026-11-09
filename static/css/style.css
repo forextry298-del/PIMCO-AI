@@ -662,42 +662,42 @@ body.home-page .page{padding-top:10px!important}
   margin-left:3px;
   vertical-align:-.15em;
   background:#f4c928;
-  animation:amazon-caret .75s steps(1,end) infinite;
+  animation:pimco-caret .75s steps(1,end) infinite;
 }
-@keyframes amazon-caret{50%{opacity:0}}
+@keyframes pimco-caret{50%{opacity:0}}
 
 
-/* Refined Amazon welcome notice */
-.amazon-welcome-overlay{position:fixed;inset:0;z-index:10000;background:rgba(5,12,17,.72);display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
-.amazon-welcome-popup{position:relative;width:min(100%,390px);max-height:88vh;overflow:auto;background:linear-gradient(155deg,#17232b 0%,#101820 58%,#0c141b 100%);border:1px solid rgba(245,198,35,.36);border-radius:22px;padding:19px 18px 17px;box-shadow:0 24px 70px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.07);color:#f5f7f8}
-.amazon-popup-topline{display:flex;align-items:center;gap:9px;padding:0 34px 15px 0;border-bottom:1px solid rgba(255,255,255,.09)}
-.amazon-popup-brand-mark,.amazon-popup-footer-mark{display:grid;place-items:center;width:29px;height:29px;border-radius:9px;background:linear-gradient(145deg,#ffe36a,#e7a900);color:#15202a;font-weight:900;font-size:18px;font-family:Arial,sans-serif}
-.amazon-popup-brand{font-size:13px;font-weight:850;letter-spacing:1.8px;color:#fff}
-.amazon-popup-live{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:9px;font-weight:800;letter-spacing:1.1px;color:#aebbc3}
-.amazon-popup-live i{width:7px;height:7px;border-radius:50%;background:#37c995;box-shadow:0 0 9px rgba(55,201,149,.8)}
-.amazon-popup-close{position:absolute;right:13px;top:13px;width:30px;height:30px;border:1px solid rgba(255,255,255,.12);border-radius:50%;background:rgba(255,255,255,.06);color:#eaf0f2;font-size:21px;line-height:1;cursor:pointer}
-.amazon-popup-heading{display:flex;align-items:center;gap:13px;padding:19px 0 13px}
-.amazon-popup-bell{flex:0 0 48px;width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(145deg,#ffe15a,#e9ad00);color:#15202a;box-shadow:0 7px 18px rgba(235,178,0,.18)}
-.amazon-popup-bell svg{width:25px;height:25px}
-.amazon-popup-eyebrow{margin:0 0 4px;color:#e8bf37;font-size:9px;font-weight:850;letter-spacing:1.35px}
-.amazon-welcome-popup h2{font-size:21px;line-height:1.15;margin:0;color:#fff;font-weight:800;letter-spacing:-.35px}
-.amazon-popup-subtitle{margin:4px 0 0;color:#aebbc3;font-size:12px}
-.amazon-popup-question{margin:4px 0 13px;color:#f0f3f4;font-size:13px;line-height:1.5;font-weight:650;min-height:20px}
-.amazon-popup-info-list{display:grid;gap:8px}
-.amazon-popup-info-row{display:flex;align-items:flex-start;gap:11px;padding:11px 12px;border:1px solid rgba(255,255,255,.075);border-radius:13px;background:rgba(255,255,255,.045);min-height:58px}
-.amazon-popup-info-icon{flex:0 0 32px;width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:rgba(245,198,35,.12);color:#f5c623}
-.amazon-popup-info-icon svg{width:19px;height:19px}
-.amazon-popup-info-row strong{display:block;margin:0 0 3px;color:#f4cf55;font-size:11px;font-weight:800;letter-spacing:.15px}
-.amazon-popup-info-row p{margin:0;color:#e5ebee;font-size:12px;line-height:1.45;overflow-wrap:anywhere;min-height:17px}
-.amazon-popup-footer{display:flex;align-items:center;gap:9px;margin-top:13px;padding:11px 12px;border-radius:12px;background:rgba(255,255,255,.035);color:#f6d65f;font-size:12px;font-weight:750;min-height:42px}
-.amazon-popup-footer-mark{width:23px;height:23px;border-radius:7px;font-size:14px;flex:0 0 23px}
-.amazon-popup-done{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:14px;border:0;border-radius:12px;padding:12px 16px;background:linear-gradient(100deg,#ffdf45,#f3b900);color:#15202a;font-size:14px;font-weight:850;cursor:pointer;box-shadow:0 7px 18px rgba(235,178,0,.16)}
-.amazon-popup-done[hidden]{display:none}
-.amazon-welcome-overlay.is-closing{opacity:0;transition:opacity .2s ease}
-@media(max-width:380px){.amazon-welcome-popup{padding:16px 14px 14px;border-radius:19px}.amazon-popup-heading{padding-top:15px}.amazon-welcome-popup h2{font-size:19px}.amazon-popup-info-row{padding:9px 10px}.amazon-popup-info-row p{font-size:11.5px}}
+/* Refined PIMCO AI welcome notice */
+.pimco-welcome-overlay{position:fixed;inset:0;z-index:10000;background:rgba(5,12,17,.72);display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.pimco-welcome-popup{position:relative;width:min(100%,390px);max-height:88vh;overflow:auto;background:linear-gradient(155deg,#17232b 0%,#101820 58%,#0c141b 100%);border:1px solid rgba(245,198,35,.36);border-radius:22px;padding:19px 18px 17px;box-shadow:0 24px 70px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.07);color:#f5f7f8}
+.pimco-popup-topline{display:flex;align-items:center;gap:9px;padding:0 34px 15px 0;border-bottom:1px solid rgba(255,255,255,.09)}
+.pimco-popup-brand-mark,.pimco-popup-footer-mark{display:grid;place-items:center;width:29px;height:29px;border-radius:9px;background:linear-gradient(145deg,#ffe36a,#e7a900);color:#15202a;font-weight:900;font-size:18px;font-family:Arial,sans-serif}
+.pimco-popup-brand{font-size:13px;font-weight:850;letter-spacing:1.8px;color:#fff}
+.pimco-popup-live{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:9px;font-weight:800;letter-spacing:1.1px;color:#aebbc3}
+.pimco-popup-live i{width:7px;height:7px;border-radius:50%;background:#37c995;box-shadow:0 0 9px rgba(55,201,149,.8)}
+.pimco-popup-close{position:absolute;right:13px;top:13px;width:30px;height:30px;border:1px solid rgba(255,255,255,.12);border-radius:50%;background:rgba(255,255,255,.06);color:#eaf0f2;font-size:21px;line-height:1;cursor:pointer}
+.pimco-popup-heading{display:flex;align-items:center;gap:13px;padding:19px 0 13px}
+.pimco-popup-bell{flex:0 0 48px;width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(145deg,#ffe15a,#e9ad00);color:#15202a;box-shadow:0 7px 18px rgba(235,178,0,.18)}
+.pimco-popup-bell svg{width:25px;height:25px}
+.pimco-popup-eyebrow{margin:0 0 4px;color:#e8bf37;font-size:9px;font-weight:850;letter-spacing:1.35px}
+.pimco-welcome-popup h2{font-size:21px;line-height:1.15;margin:0;color:#fff;font-weight:800;letter-spacing:-.35px}
+.pimco-popup-subtitle{margin:4px 0 0;color:#aebbc3;font-size:12px}
+.pimco-popup-question{margin:4px 0 13px;color:#f0f3f4;font-size:13px;line-height:1.5;font-weight:650;min-height:20px}
+.pimco-popup-info-list{display:grid;gap:8px}
+.pimco-popup-info-row{display:flex;align-items:flex-start;gap:11px;padding:11px 12px;border:1px solid rgba(255,255,255,.075);border-radius:13px;background:rgba(255,255,255,.045);min-height:58px}
+.pimco-popup-info-icon{flex:0 0 32px;width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:rgba(245,198,35,.12);color:#f5c623}
+.pimco-popup-info-icon svg{width:19px;height:19px}
+.pimco-popup-info-row strong{display:block;margin:0 0 3px;color:#f4cf55;font-size:11px;font-weight:800;letter-spacing:.15px}
+.pimco-popup-info-row p{margin:0;color:#e5ebee;font-size:12px;line-height:1.45;overflow-wrap:anywhere;min-height:17px}
+.pimco-popup-footer{display:flex;align-items:center;gap:9px;margin-top:13px;padding:11px 12px;border-radius:12px;background:rgba(255,255,255,.035);color:#f6d65f;font-size:12px;font-weight:750;min-height:42px}
+.pimco-popup-footer-mark{width:23px;height:23px;border-radius:7px;font-size:14px;flex:0 0 23px}
+.pimco-popup-done{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:14px;border:0;border-radius:12px;padding:12px 16px;background:linear-gradient(100deg,#ffdf45,#f3b900);color:#15202a;font-size:14px;font-weight:850;cursor:pointer;box-shadow:0 7px 18px rgba(235,178,0,.16)}
+.pimco-popup-done[hidden]{display:none}
+.pimco-welcome-overlay.is-closing{opacity:0;transition:opacity .2s ease}
+@media(max-width:380px){.pimco-welcome-popup{padding:16px 14px 14px;border-radius:19px}.pimco-popup-heading{padding-top:15px}.pimco-welcome-popup h2{font-size:19px}.pimco-popup-info-row{padding:9px 10px}.pimco-popup-info-row p{font-size:11.5px}}
 
 
-/* Compact My account page — matching the Amazon charcoal and gold home palette */
+/* Compact My account page — matching the PIMCO AI charcoal and gold home palette */
 body.my-page{background:#0b1015!important;color:#f5f6f7!important;font-family:Arial,Helvetica,sans-serif!important;padding-bottom:82px!important}
 body.my-page .topbar{background:#0b1015!important;border:0!important;box-shadow:none!important}
 body.my-page .brand-word{color:#f6f7f8!important;-webkit-text-fill-color:#f6f7f8!important}
@@ -831,7 +831,7 @@ body:not(:has(.auth-stage)) .bottom-nav{backdrop-filter:blur(12px)}
   body:not(:has(.auth-stage))::after{animation:none!important}
 }
 
-/* Compact Amazon AI machine catalogue */
+/* Compact PIMCO AI AI machine catalogue */
 .ai-catalog{padding:2px 0 18px;color:#f2f8fb}
 .ai-series-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:0 -12px 10px;padding:5px 10px 0;background:rgba(3,10,15,.86);border-bottom:1px solid rgba(30,190,203,.35)}
 .ai-series-tabs a{display:block;text-align:center;text-decoration:none;color:#a9bdc8;padding:12px 3px 10px;font:600 14px Arial,sans-serif;border-bottom:3px solid transparent}
@@ -856,7 +856,7 @@ body:not(:has(.auth-stage)) .bottom-nav{backdrop-filter:blur(12px)}
 .ai-series-tabs a{min-width:0;text-align:center;white-space:nowrap;font-size:13px;padding:12px 2px}
 @media(max-width:380px){.ai-series-tabs a{font-size:12px}}
 
-/* D-series tab and compact six-series navigation in the Amazon home-page teal theme */
+/* D-series tab and compact six-series navigation in the PIMCO AI home-page teal theme */
 .ai-series-tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px;overflow-x:auto;scrollbar-width:none}
 .ai-series-tabs::-webkit-scrollbar{display:none}
 .ai-series-tabs a{white-space:nowrap;text-align:center;color:#68716f;text-decoration:none;padding:12px 3px 10px;font-size:13px;border-bottom:3px solid transparent}
@@ -1038,7 +1038,7 @@ body.team-page .page{max-width:760px!important;padding:10px 14px 22px!important;
  .team-page .copy-btn{min-width:76px;padding:8px 9px}
 }
 
-/* Final invite-page alignment: exact Amazon home palette and readable mobile sizing */
+/* Final invite-page alignment: exact PIMCO AI home palette and readable mobile sizing */
 body.team-page{
  background:#0b1015!important;color:#f5f6f7!important;
  font-family:Arial,Helvetica,sans-serif!important;
@@ -1261,7 +1261,7 @@ body.bill-page .bottom-nav a{color:#9bb0c4!important;font:10px Arial,sans-serif!
 body.bill-page .bottom-nav a.active{color:#21b9f3!important;}
 @media(max-width:360px){.bill-content{padding-left:9px;padding-right:9px}.bill-empty{margin-top:54px}.bill-transaction{grid-template-columns:32px minmax(0,1fr) auto;gap:7px;padding:9px 8px}.bill-transaction-icon{width:30px;height:30px}.bill-transaction-main strong{font-size:11px}.bill-transaction-side>b{font-size:10px}}
 
-/* FINAL BILL COLOUR OVERRIDE — Amazon charcoal and gold */
+/* FINAL BILL COLOUR OVERRIDE — PIMCO AI charcoal and gold */
 body.bill-page,
 body.bill-page .bill-screen {
     background-color: #0b1015 !important;
@@ -1373,7 +1373,7 @@ body.bill-page .bottom-nav {
 body.bill-page .bottom-nav a.active {
     color: #ffd21c !important;
 }
-/* Compact Amazon withdrawal page: charcoal, dark panels and gold */
+/* Compact PIMCO AI withdrawal page: charcoal, dark panels and gold */
 body:has(.withdraw-page){background:#0b1015!important;color:#f5f6f7!important;font-family:Arial,Helvetica,sans-serif!important}
 body:has(.withdraw-page) .topbar{display:none!important}
 body:has(.withdraw-page) .page{max-width:560px!important;padding:0 12px 88px!important;background:transparent!important}

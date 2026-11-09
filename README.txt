@@ -1,8 +1,6 @@
-AMAZON PLATFORM - LOCAL DEMO
-1. Install Python and unzip this folder in Termux.
-2. cd into AMAZON_PLATFORM
-3. pip install -r requirements.txt
-4. python app.py
-5. Open http://127.0.0.1:5000
-SQLite database is created in instance/amazon.db.
-This is a local UI/demo: wallet, deposits, withdrawals, machine purchases and income are display-only and do not process payments.
+PIMCO AI compact registration/login update
+
+Extract this ZIP into your PIMCO_AI project folder, then run:
+python install_auth_update.py
+
+Run from the project root containing app.py. The installer backs up app.py and templates/auth.html. It does not delete your database.

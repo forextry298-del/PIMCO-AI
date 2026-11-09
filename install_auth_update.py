@@ -1,0 +1,103 @@
+
+from pathlib import Path
+import shutil, datetime, sys
+
+app_path = Path("app.py")
+auth_path = Path("templates/auth.html")
+if not app_path.exists() or not auth_path.exists():
+    sys.exit("Run this installer from the PIMCO_AI project root.")
+
+app = app_path.read_text()
+old = """            if not all([username, country, phone, email, password, confirm_password]) or len(password) < 8 or password != confirm_password:
+                flash("Please complete all fields, use at least 8 password characters, and make sure both passwords match.")
+            else:
+                try:
+                    with db() as con:
+                        inviter = con.execute("SELECT id FROM users WHERE UPPER(referral_code)=?", (invite_code,)).fetchone() if invite_code else None
+                        cur = con.execute(
+                            "INSERT INTO users(email,phone,username,country,password_hash,referral_code,referred_by) VALUES(?,?,?,?,?,?,?)",
+                            (email, phone, username, country, generate_password_hash(password), secrets.token_hex(4).upper(), inviter["id"] if inviter else None)
+                        )
+                        user_id = cur.lastrowid
+                    session["user_id"] = user_id
+                    session["phone"] = phone
+                    session["username"] = username
+                    session["show_login_notice"] = True
+                    return redirect(url_for("home"))
+                except sqlite3.IntegrityError:
+                    flash("Username, email or phone number is already registered.")"""
+new = """            if not phone or not password or not confirm_password or len(password) < 8 or password != confirm_password:
+                flash("Enter your phone number, use at least 8 password characters, and make sure both passwords match.")
+            else:
+                try:
+                    with db() as con:
+                        inviter = con.execute("SELECT id FROM users WHERE UPPER(referral_code)=?", (invite_code,)).fetchone() if invite_code else None
+                        cur = con.execute(
+                            "INSERT INTO users(email,phone,username,country,password_hash,referral_code,referred_by) VALUES(?,?,?,?,?,?,?)",
+                            (None, phone, None, "Uganda (UGX)", generate_password_hash(password), secrets.token_hex(4).upper(), inviter["id"] if inviter else None)
+                        )
+                        user_id = cur.lastrowid
+                    session["user_id"] = user_id
+                    session["phone"] = phone
+                    session["username"] = ""
+                    session["show_login_notice"] = True
+                    return redirect(url_for("home"))
+                except sqlite3.IntegrityError:
+                    flash("This phone number is already registered.")"""
+if old in app:
+    app = app.replace(old, new, 1)
+elif "Enter your phone number, use at least 8 password characters" not in app:
+    sys.exit("Could not locate the expected registration code; no files changed.")
+
+auth = """{% extends "base.html" %}
+{% block content %}
+<style>
+.auth-stage{min-height:76vh;display:flex;align-items:center;justify-content:center;padding:20px 12px}
+.auth-content{width:100%;max-width:350px;margin:auto}
+.auth-brand-word{text-align:center;font-size:25px;font-weight:900;color:#20c5e8;margin-bottom:6px}
+.auth-welcome{text-align:center;font-size:22px;margin:0 0 15px}
+.wave-auth-form{box-sizing:border-box;padding:17px 14px;border-radius:16px;background:rgba(7,30,65,.95);border:1px solid rgba(65,190,230,.4);box-shadow:0 10px 30px #0003;display:flex;flex-direction:column;gap:10px}
+.wave-field{min-height:44px;display:flex;align-items:center;padding:0 11px;border-radius:10px;background:#ffffff18;border:1px solid #ffffff26}
+.wave-field input{width:100%;min-width:0;height:42px;border:0;outline:0;background:transparent;color:white;font-size:14px}
+.wave-field input::placeholder{color:#ffffffb8}
+.wave-submit{height:44px;border:0;border-radius:10px;background:linear-gradient(110deg,#0879c9,#20c5e8);color:white;font-weight:800;font-size:15px}
+.wave-auth-switch{text-align:center;font-size:13px;padding-top:3px}
+.wave-auth-switch a{color:#75def4;text-decoration:none;font-weight:700}
+</style>
+<section class="auth-stage"><div class="auth-content">
+<div class="auth-brand-word">PIMCO AI</div><h1 class="auth-welcome">Welcome</h1>
+{% if mode == 'signup' %}
+<form method="post" class="wave-auth-form" autocomplete="on">
+<input type="hidden" name="mode" value="signup">
+<label class="wave-field"><input name="phone" type="tel" placeholder="Phone number" required autocomplete="tel"></label>
+<label class="wave-field"><input id="signup-password" name="password" type="password" placeholder="Create password" minlength="8" required autocomplete="new-password"></label>
+<label class="wave-field"><input id="confirm-password" name="confirm_password" type="password" placeholder="Confirm password" minlength="8" required autocomplete="new-password"></label>
+<label class="wave-field"><input name="invite_code" value="{{ invite_code|default('') }}" placeholder="Invitation code (optional)"></label>
+<button class="wave-submit" type="submit">Register</button>
+<div class="wave-auth-switch"><a href="{{ url_for('auth', mode='signin') }}">Already registered? Login</a></div>
+</form>
+{% else %}
+<form method="post" class="wave-auth-form" autocomplete="on">
+<input type="hidden" name="mode" value="signin">
+<label class="wave-field"><input name="identity" type="tel" placeholder="Phone number" required autocomplete="username"></label>
+<label class="wave-field"><input name="password" type="password" placeholder="Password" required autocomplete="current-password"></label>
+<button class="wave-submit" type="submit">Login</button>
+<div class="wave-auth-switch"><a href="{{ url_for('auth', mode='signup') }}">Create an account</a></div>
+</form>
+{% endif %}
+</div></section>
+<script>
+const f=document.querySelector('form input[name="mode"][value="signup"]')?.form;
+if(f)f.addEventListener('submit',e=>{const a=document.getElementById('signup-password'),b=document.getElementById('confirm-password');if(a.value!==b.value){e.preventDefault();b.setCustomValidity('Passwords do not match.');b.reportValidity();}else b.setCustomValidity('');});
+</script>
+{% endblock %}
+"""
+
+backup = Path("PIMCO_AUTH_BACKUP")
+backup.mkdir(exist_ok=True)
+stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+shutil.copy2(app_path, backup / f"app.py.{stamp}.bak")
+shutil.copy2(auth_path, backup / f"auth.html.{stamp}.bak")
+app_path.write_text(app)
+auth_path.write_text(auth)
+print("PIMCO AI registration and login updated. Existing database preserved.")

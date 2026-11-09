@@ -1,0 +1,71 @@
+{% extends "base.html" %}{% block content %}
+<section class="auth-stage">
+  <div class="auth-content">
+    <div class="auth-brand-word">ARMAZON</div>
+    <h1 class="auth-welcome">Welcome</h1>
+    {% if mode == 'signup' %}
+      <form method="post" class="wave-auth-form" autocomplete="on">
+        <input type="hidden" name="mode" value="signup">
+        <input type="hidden" name="invite_code" value="{{ invite_code|default('') }}">
+        <label class="wave-field">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2"/><path d="M10 18.5h4"/></svg>
+          <input name="username" placeholder="Username" required autocomplete="username" aria-label="Username">
+        </label>
+        <label class="wave-field">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-7.2 8-13a8 8 0 1 0-16 0c0 5.8 8 13 8 13Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          <select name="country" aria-label="Country"><option>Uganda (UGX)</option></select>
+        </label>
+        <label class="wave-field">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14v18H5zM9 6h6M10 18h4"/></svg>
+          <input name="phone" type="tel" placeholder="Phone Number" required autocomplete="tel" aria-label="Phone Number">
+        </label>
+        <label class="wave-field">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>
+          <input name="email" type="email" placeholder="Email Address" required autocomplete="email" aria-label="Email Address">
+        </label>
+        <label class="wave-field">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="10" r="5"/><path d="m11.5 13.5 8 8m-3-3 2-2m-5-1 2-2"/></svg>
+          <input id="signup-password" name="password" type="password" placeholder="Set Password" minlength="8" required autocomplete="new-password" aria-label="Set Password">
+          <button class="wave-eye" type="button" data-target="signup-password" aria-label="Show password"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        </label>
+        <label class="wave-field">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="10" r="5"/><path d="m11.5 13.5 8 8m-3-3 2-2m-5-1 2-2"/></svg>
+          <input id="confirm-password" name="confirm_password" type="password" placeholder="Confirm Password" minlength="8" required autocomplete="new-password" aria-label="Confirm Password">
+          <button class="wave-eye" type="button" data-target="confirm-password" aria-label="Show confirm password"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        </label>
+        <button class="wave-submit" type="submit">Register</button>
+        <div class="wave-auth-switch"><a href="{{url_for('auth',mode='signin')}}">‹ Login</a></div>
+      </form>
+    {% else %}
+      <form method="post" class="wave-auth-form" autocomplete="on">
+        <input type="hidden" name="mode" value="signin">
+        <label class="wave-field">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2"/><path d="M10 18.5h4"/></svg>
+          <input name="identity" placeholder="Phone Number" required autocomplete="username" aria-label="Phone Number, username or email">
+        </label>
+        <label class="wave-field">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="10" r="5"/><path d="m11.5 13.5 8 8m-3-3 2-2m-5-1 2-2"/></svg>
+          <input id="login-password" name="password" type="password" placeholder="Login Password" required autocomplete="current-password" aria-label="Login Password">
+          <button class="wave-eye" type="button" data-target="login-password" aria-label="Show password"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        </label>
+        <button class="wave-submit" type="submit">Login</button>
+        <div class="wave-auth-switch"><a href="{{url_for('auth',mode='signup')}}">‹ Register</a></div>
+      </form>
+    {% endif %}
+  </div>
+</section>
+<script>
+document.querySelectorAll('.wave-eye').forEach(button=>button.addEventListener('click',()=>{
+  const field=document.getElementById(button.dataset.target);
+  field.type=field.type==='password'?'text':'password';
+  button.classList.toggle('revealed',field.type==='text');
+}));
+const signupForm=document.querySelector('form input[name="mode"][value="signup"]')?.form;
+if(signupForm){signupForm.addEventListener('submit',event=>{
+  const first=document.getElementById('signup-password');
+  const second=document.getElementById('confirm-password');
+  if(first.value!==second.value){event.preventDefault();second.setCustomValidity('Passwords do not match.');second.reportValidity();}
+  else second.setCustomValidity('');
+});}
+</script>
+{% endblock %}
