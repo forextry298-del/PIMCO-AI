@@ -3,6 +3,11 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    return {"status": "ok"}, 200
 app.secret_key = os.environ.get("SECRET_KEY", "pimco-local-demo-change-this")
 DB = os.path.join(app.root_path, "instance", "amazon.db")
 os.makedirs(os.path.dirname(DB), exist_ok=True)
