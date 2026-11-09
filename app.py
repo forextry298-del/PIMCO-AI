@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "amazon-local-demo-change-this")
+app.secret_key = os.environ.get("SECRET_KEY", "pimco-local-demo-change-this")
 DB = os.path.join(app.root_path, "instance", "amazon.db")
 os.makedirs(os.path.dirname(DB), exist_ok=True)
 
@@ -117,24 +117,24 @@ def auth():
             phone = request.form.get("phone", "").strip()
             email = request.form.get("email", "").strip().lower()
             invite_code = request.form.get("invite_code", "").strip().upper()
-            if not all([username, country, phone, email, password, confirm_password]) or len(password) < 8 or password != confirm_password:
-                flash("Please complete all fields, use at least 8 password characters, and make sure both passwords match.")
+            if not phone or not password or not confirm_password or len(password) < 8 or password != confirm_password:
+                flash("Enter your phone number, use at least 8 password characters, and make sure both passwords match.")
             else:
                 try:
                     with db() as con:
                         inviter = con.execute("SELECT id FROM users WHERE UPPER(referral_code)=?", (invite_code,)).fetchone() if invite_code else None
                         cur = con.execute(
                             "INSERT INTO users(email,phone,username,country,password_hash,referral_code,referred_by) VALUES(?,?,?,?,?,?,?)",
-                            (email, phone, username, country, generate_password_hash(password), secrets.token_hex(4).upper(), inviter["id"] if inviter else None)
+                            (None, phone, None, "Uganda (UGX)", generate_password_hash(password), secrets.token_hex(4).upper(), inviter["id"] if inviter else None)
                         )
                         user_id = cur.lastrowid
                     session["user_id"] = user_id
                     session["phone"] = phone
-                    session["username"] = username
+                    session["username"] = ""
                     session["show_login_notice"] = True
                     return redirect(url_for("home"))
                 except sqlite3.IntegrityError:
-                    flash("Username, email or phone number is already registered.")
+                    flash("This phone number is already registered.")
         else:
             with db() as con:
                 user = con.execute(
@@ -500,6 +500,12 @@ def admin():
         withdrawals=con.execute('SELECT w.*,u.phone AS user_phone FROM withdrawals w JOIN users u ON u.id=w.user_id ORDER BY w.id DESC').fetchall()
         users=con.execute('SELECT id,phone,username,balance FROM users ORDER BY id DESC').fetchall()
     return render_template('admin.html',active='my',deposits=deposits,withdrawals=withdrawals,users=users,machines=MACHINE_CATALOG)
+
+
+@app.route("/pages/login/index")
+def pimco_legacy_invite():
+    code = request.args.get("code", "").strip()
+    return redirect(url_for("auth", mode="signup", ref=code))
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)
