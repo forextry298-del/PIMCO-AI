@@ -1,0 +1,62 @@
+{% extends "base.html" %}{% block content %}
+<div class="ai-catalog">
+  <nav class="ai-series-tabs" aria-label="Machine series">
+    <a class="{{ 'selected' if series == 'ALL' else '' }}" href="{{ url_for('ai', series='ALL') }}">All</a>
+    <a class="{{ 'selected' if series == 'A' else '' }}" href="{{ url_for('ai', series='A') }}">A Series</a>
+    <a class="{{ 'selected' if series == 'B' else '' }}" href="{{ url_for('ai', series='B') }}">B Series</a>
+    <a class="{{ 'selected' if series == 'LV' else '' }}" href="{{ url_for('ai', series='LV') }}">LV Series</a>
+    <a class="{{ 'selected' if series == 'K' else '' }}" href="{{ url_for('ai', series='K') }}">K Series</a>
+    <a class="{{ 'selected' if series == 'D' else '' }}" href="{{ url_for('ai', series='D') }}">D Series</a>
+    <a class="{{ 'selected' if series == 'VIP' else '' }}" href="{{ url_for('ai', series='VIP') }}">VIP Series</a>
+  </nav>
+  <div class="ai-series-note">Explore Amazon AI mining machines. Check each machine's price, daily income and term before making a decision.</div>
+  {% set machines = [
+    {'code':'A1','series':'A','image':'machine-a1.jpg','price':'30,000','daily':'3,000','total':'48,000','term':'16 days','lock':'16 days'},
+    {'code':'A2','series':'A','image':'machine-a2.jpg','price':'97,000','daily':'9,700','total':'194,000','term':'20 days','lock':'20 days'},
+    {'code':'A3','series':'A','image':'machine-a3.jpg','price':'120,000','daily':'16,300','total':'293,400','term':'18 days','lock':'18 days'},
+    {'code':'B1','series':'B','image':'machine-b1.jpg','price':'48,000','daily':'14,400','total':'72,000','term':'5 days','lock':'5 days'},
+    {'code':'B2','series':'B','image':'machine-b2.jpg','price':'80,000','daily':'24,000','total':'120,000','term':'5 days','lock':'5 days'},
+    {'code':'B3','series':'B','image':'machine-b3.jpg','price':'100,000','daily':'30,000','total':'150,000','term':'5 days','lock':'5 days'},
+    {'code':'B4','series':'B','image':'machine-b4.jpg','price':'350,000','daily':'105,000','total':'525,000','term':'5 days','lock':'5 days'},
+    {'code':'LV1','series':'LV','image':'machine-lv1.jpg','price':'50,000','daily':'9,820','total':'1,473,000','term':'150 days','lock':'150 days'},
+    {'code':'LV2','label':'LV2 • UGX 75K','series':'LV','image':'machine-lv2.jpg','price':'75,000','daily':'17,300','total':'3,114,000','term':'180 days','lock':'No lock'},
+    {'code':'LV2','label':'LV2 • UGX 100K','series':'LV','image':'machine-lv2.jpg','price':'100,000','daily':'23,000','total':'2,760,000','term':'120 days','lock':'120 days'},
+    {'code':'LV3','series':'LV','image':'machine-lv3.jpg','price':'250,000','daily':'40,000','total':'3,600,000','term':'90 days','lock':'No lock'},
+    {'code':'LV4','series':'LV','image':'machine-lv4.jpg','price':'500,000','daily':'95,000','total':'950,000','term':'10 days','lock':'No lock'},
+    {'code':'K1','series':'K','image':'machine-k1.jpg','price':'50,000','daily':'30,000','total':'60,000','term':'2 days','lock':'2 days'},
+    {'code':'K2','series':'K','image':'machine-k2.jpg','price':'100,000','daily':'70,000','total':'140,000','term':'2 days','lock':'2 days'},
+    {'code':'K3','series':'K','image':'machine-k3.jpg','price':'140,000','daily':'98,000','total':'196,000','term':'2 days','lock':'2 days'},
+    {'code':'K4','series':'K','image':'machine-k4.jpg','price':'200,000','daily':'150,000','total':'300,000','term':'2 days','lock':'2 days'},
+    {'code':'D1','series':'D','image':'machine-d1.jpg','price':'1,000,000','daily':'470,000','total':'1,880,000','term':'4 days','lock':'No lock'},
+    {'code':'D2','series':'D','image':'machine-d2.jpg','price':'2,000,000','daily':'950,000','total':'3,800,000','term':'4 days','lock':'No lock'},
+    {'code':'VIP1','series':'VIP','image':'vip1.jpg','price':'10,000','daily':'4,000','total':'40,000','term':'10 days','lock':'No lock'},
+    {'code':'VIP2','series':'VIP','image':'vip2.jpg','price':'20,000','daily':'7,000','total':'70,000','term':'10 days','lock':'No lock'},
+    {'code':'VIP3','series':'VIP','image':'vip3.jpg','price':'50,000','daily':'10,000','total':'100,000','term':'10 days','lock':'No lock'},
+    {'code':'VIP4','series':'VIP','image':'vip4.jpg','price':'100,000','daily':'50,000','total':'500,000','term':'10 days','lock':'No lock'},
+    {'code':'VIP5','series':'VIP','image':'vip5.jpg','price':'200,000','daily':'100,000','total':'1,000,000','term':'10 days','lock':'No lock'},
+    {'code':'VIP6','series':'VIP','image':'vip6.jpg','price':'320,000','daily':'180,000','total':'1,800,000','term':'10 days','lock':'No lock'},
+    {'code':'VIP7','series':'VIP','image':'vip7.jpg','price':'500,000','daily':'250,000','total':'2,500,000','term':'10 days','lock':'No lock'},
+    {'code':'VIP8','series':'VIP','image':'vip8.jpg','price':'860,000','daily':'430,000','total':'4,300,000','term':'10 days','lock':'No lock'},
+    {'code':'VIP9','series':'VIP','image':'vip9.jpg','price':'1,000,000','daily':'500,000','total':'5,000,000','term':'10 days','lock':'No lock'},
+    {'code':'VIP10','series':'VIP','image':'vip10.jpg','price':'5,000,000','daily':'1,000,000','total':'10,000,000','term':'10 days','lock':'No lock'}
+  ] %}
+  <div class="ai-machine-list">
+    {% for m in machines %}
+      {% if series == 'ALL' or series == m.series %}
+      <a class="ai-machine-card machine-link" href="{{ url_for('machine_detail', code=m.code) }}">
+        <div class="ai-machine-photo"><img src="{{ url_for('static', filename='images/' ~ m.image) }}" alt="{{ m.code }} Bitcoin ASIC miner" loading="lazy"></div>
+        <div class="ai-machine-info">
+          <div class="ai-machine-title">{{ m.label if m.label is defined else m.code }}</div>
+          <div class="ai-machine-detail"><span>Price</span><strong>UGX {{ m.price }}</strong></div>
+          <div class="ai-machine-detail"><span>Daily income</span><strong>UGX {{ m.daily }}</strong></div>
+          <div class="ai-machine-detail ai-total-income"><span>Total income</span><strong>UGX {{ m.total }}</strong></div>
+          <div class="ai-machine-detail"><span>Term</span><strong>{{ m.term }}</strong></div>
+          <div class="ai-machine-detail"><span>Lock</span><strong>{{ m.lock }}</strong></div>
+        </div>
+      </a>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <p class="ai-demo-note">Displayed figures are plan information only. Confirm the platform's actual terms and payment arrangements before depositing.</p>
+</div>
+{% endblock %}

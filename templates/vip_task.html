@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="vip-task-page">
+  <header class="vip-task-heading">
+    <a href="{{ url_for('my') }}" aria-label="Back to My">‹</a>
+    <div><h1>VIP Task</h1><p>Earn rewards from approved direct referrals</p></div>
+    <span class="vip-crown" aria-hidden="true">♛</span>
+  </header>
+  <div class="vip-task-note"><strong>How it works</strong><span>Only Level 1 invited members with at least one approved deposit count. Rewards are credited to your Balance once each target is reached.</span></div>
+  <div class="vip-task-list">
+    {% for task in tasks %}
+    <article class="vip-task-card {% if task.completed %}is-complete{% endif %}">
+      <div class="vip-card-top"><span class="vip-level-icon">♛</span><div><strong>VIP {{ task.level }}</strong><small>{{ task.required }} approved LV1 invites</small></div><span class="vip-reward">UGX {{ "{:,.0f}".format(task.reward) }}</span></div>
+      <div class="vip-progress-line"><span>Task progress</span><b>{{ task.progress }} / {{ task.required }}</b></div>
+      <div class="vip-progress-track"><i style="width: {{ (task.progress / task.required * 100)|round(1) }}%"></i></div>
+      <div class="vip-card-bottom"><span>VIP reward <b>UGX {{ "{:,.0f}".format(task.reward) }}</b></span>{% if task.completed %}<span class="vip-status"><span aria-hidden="true">✓</span> COMPLETED</span>{% else %}<span class="vip-status pending">IN PROGRESS</span>{% endif %}</div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

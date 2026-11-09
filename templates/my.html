@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="my-dashboard">
+  <div class="my-profile-line">
+    <div class="my-user-details">
+      <strong>{{ session.get('phone', session.get('email', '')) }}</strong>
+      <span>{{ session.get('username', 'Anon') or 'Anon' }}</span>
+    </div>
+    <div class="my-brand-mark" aria-label="Amazon">A<span>Amazon</span></div>
+  </div>
+
+  <section class="my-wallet-card" aria-label="Wallet and balance">
+    <div class="my-wallet-values">
+      <div><span>Wallet</span><strong>0.00</strong></div>
+      <div><span>Balance</span><strong>0.00</strong></div>
+    </div>
+    <span class="my-wallet-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6M6 15l6 6 6-6"/></svg></span>
+  </section>
+
+  <section class="my-menu-card" aria-label="Account shortcuts">
+    <div class="my-menu-grid">
+      <a class="my-menu-item" href="{{ url_for('home') }}#deposit"><span class="my-menu-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 8h18M16 14h2"/></svg></span><span>Deposit</span></a>
+      <a class="my-menu-item" href="{{ url_for('home') }}#withdraw"><span class="my-menu-icon"><svg viewBox="0 0 24 24"><path d="M3 17h18M5 17l2-3h10l2 3M12 3v9m-4-4 4 4 4-4"/><path d="M10 5h4"/></svg></span><span>Withdraw</span></a>
+      <a class="my-menu-item" href="{{ url_for('bill') }}"><span class="my-menu-icon"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M3 9h18M7 14h4m4 0h2"/></svg></span><span>Bill</span></a>
+      <a class="my-menu-item" href="{{ url_for('team') }}"><span class="my-menu-icon"><svg viewBox="0 0 24 24"><path d="M3 8h3l3 4h6l3-4h3M7 8l-2 8h14l-2-8M9 12l3 3 3-3"/><path d="M8 5h8"/></svg></span><span>Invite</span></a>
+      <a class="my-menu-item" href="{{ url_for('team') }}"><span class="my-menu-icon"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 20c.3-4 2.3-6 6-6s5.7 2 6 6m1-5c3-.4 6 1.2 7 5"/></svg></span><span>My team</span></a>
+      <a class="my-menu-item" href="{{ url_for('vip_task') }}"><span class="my-menu-icon"><svg viewBox="0 0 24 24"><path d="m12 2.5 3 6.1 6.7 1-4.9 4.8 1.2 6.8-6-3.2-6 3.2 1.1-6.8-4.8-4.8 6.7-1z"/></svg></span><span>VIP Task</span></a>
+      <a class="my-menu-item" href="{{ url_for('home') }}#messages"><span class="my-menu-icon"><svg viewBox="0 0 24 24"><path d="M3 13v-1a9 9 0 0 1 18 0v1"/><rect x="2.5" y="12" width="4.5" height="7" rx="2"/><rect x="17" y="12" width="4.5" height="7" rx="2"/><path d="M19 19c-.8 2-2.4 2.8-5 2.8h-2"/></svg></span><span>Manager</span></a>
+      <a class="my-menu-item" href="{{ url_for('my') }}"><span class="my-menu-icon"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20c.3-4 2.2-6 6-6m8-3 1.2 1.2 2.3-.2.5 2.2 1.7 1.5-1.2 2 .2 2.3-2.2.5-1.5 1.7-2-1.2-2.3.2-.5-2.2-1.7-1.5 1.2-2-.2-2.3 2.2-.5z"/><circle cx="17" cy="17" r="2"/></svg></span><span>Settings</span></a>
+    </div>
+  </section>
+
+  <section class="my-salary-card" aria-label="Monthly salary summary">
+    <div class="my-salary-values">
+      <div><span>Last month's salary</span><strong>0.00</strong></div>
+      <div><span>This month's salary</span><strong>0.00</strong></div>
+    </div>
+    <button type="button" disabled>Get last month's salary</button>
+  </section>
+  <a class="my-logout" href="{{ url_for('logout') }}">Log out</a>
+</div>
+{% endblock %}

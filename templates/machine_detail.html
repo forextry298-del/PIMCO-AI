@@ -1,0 +1,34 @@
+{% extends "base.html" %}{% block content %}
+<section class="machine-detail">
+  <a class="detail-back" href="{{ url_for('ai', series=machine.series) }}">‹ Back to {{ machine.series }} Series</a>
+  <img class="detail-image" src="{{ url_for('static', filename='images/' ~ machine.image) }}" alt="{{ machine.code }}">
+  <div class="detail-heading">
+    <div><h2>{{ machine.code }}</h2><small>Series: {{ machine.series }}</small></div>
+    <strong class="detail-price">UGX {{ "{:,.0f}".format(machine.price) }}</strong>
+  </div>
+  <p class="detail-description">Plan details and term are shown below.</p>
+  <div class="detail-panel">
+    <div><span>Lock:</span><b>{{ machine.lock }}</b></div>
+    <div><span>Daily income:</span><b>UGX {{ "{:,.0f}".format(machine.daily) }}</b></div>
+    <div><span>Total income:</span><b>UGX {{ "{:,.0f}".format(machine.total) }}</b></div>
+  </div>
+  <div class="detail-panel balances">
+    <div><span>Wallet (deposited funds):</span><b>UGX {{ "{:,.0f}".format(wallet_balance or 0) }}</b></div>
+    <div><span>Balance (platform earnings):</span><b>UGX {{ "{:,.0f}".format(balance or 0) }}</b></div>
+  </div>
+  <form class="purchase-form" method="post" action="{{ url_for('machine_purchase', code=machine.code) }}">
+    {% if vip %}
+      <input type="hidden" name="payment_source" value="balance">
+      <p class="payment-note">VIP products can only be purchased using Balance.</p>
+      <button class="purchase-button" type="submit">Use Balance</button>
+    {% else %}
+      <p class="payment-note">Choose how to pay:</p>
+      <div class="payment-choice">
+        <button type="submit" name="payment_source" value="wallet">Use Wallet</button>
+        <button type="submit" name="payment_source" value="balance">Use Balance</button>
+      </div>
+    {% endif %}
+  </form>
+  <p class="detail-disclaimer">Displayed income figures are plan information, not verified or guaranteed mining returns. Wallet deposits must be confirmed before funds are credited.</p>
+</section>
+{% endblock %}

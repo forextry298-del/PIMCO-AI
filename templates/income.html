@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="income-screen">
+  <header class="income-screen-header">
+    <a href="{{ url_for('home') }}" aria-label="Back">‹</a>
+    <h1>Income</h1>
+    <span></span>
+  </header>
+  <div class="income-content">
+    <div class="income-section-title">
+      <strong>My Purchased Machines</strong>
+      <span>{{ machines|length }} machine{{ '' if machines|length == 1 else 's' }}</span>
+    </div>
+    {% if machines %}
+      <div class="purchased-machine-list">
+      {% for machine in machines %}
+        <article class="purchased-machine-card">
+          {% if machine.image %}
+          <img src="{{ url_for('static', filename='images/' ~ machine.image) }}" alt="{{ machine.name }}" loading="lazy">
+          {% else %}
+          <div class="purchased-machine-placeholder">A</div>
+          {% endif %}
+          <div class="purchased-machine-details">
+            <div class="purchased-machine-name">{{ machine.name }}</div>
+            <div class="purchased-machine-meta">Purchased: {{ machine.purchased_at }}</div>
+            <div class="purchased-machine-values">
+              <span><small>Price</small><b>UGX {{ "{:,.0f}".format(machine.price or 0) }}</b></span>
+              <span><small>Daily income</small><b>UGX {{ "{:,.0f}".format(machine.daily or 0) }}</b></span>
+            </div>
+            {% if machine.days %}<div class="purchased-machine-duration">Duration: {{ machine.days }} days</div>{% endif %}
+          </div>
+        </article>
+      {% endfor %}
+      </div>
+    {% else %}
+      <div class="income-no-machines">No purchased machines yet</div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

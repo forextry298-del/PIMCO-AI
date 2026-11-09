@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="invite-page">
+  <div class="invite-hero">
+    <div class="invite-heading">
+      <span class="invite-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 8a3 3 0 1 0-2.8-4M8 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm8 9a3 3 0 1 0-2.8-4M10.7 10.8l3.1-2M10.7 13.2l3.1 2"/></svg>
+      </span>
+      <div><strong>Invite friends</strong><small>Grow your team together</small></div>
+    </div>
+    <div class="invite-copy-row">
+      <div class="invite-copy-text"><small>INVITATION CODE</small><strong>{{ referral }}</strong></div>
+      <button type="button" class="copy-btn" data-copy="{{ referral }}">
+        <svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>Copy
+      </button>
+    </div>
+    <div class="invite-copy-row link-row">
+      <div class="invite-copy-text"><small>YOUR INVITE LINK</small><strong>{{ request.host_url }}i/{{ referral }}</strong></div>
+      <button type="button" class="copy-btn" data-copy="{{ request.host_url }}i/{{ referral }}">
+        <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.1 0l3-3A5 5 0 0 0 13 2.9l-1.7 1.7M14 11a5 5 0 0 0-7.1 0l-3 3a5 5 0 0 0 7.1 7.1l1.7-1.7"/></svg>Copy link
+      </button>
+    </div>
+    <p class="invite-hint">Share your code with friends when they register.</p>
+  </div>
+
+  <div class="team-summary">
+    <h2>My team</h2>
+    <div class="team-stat-grid">
+      <div class="team-stat-card">
+        <span class="stat-icon"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2.5 20c.3-4 2.5-6 6.5-6s6.2 2 6.5 6m.2-5c3.5-.4 5.6 1.3 5.8 5"/></svg></span>
+        <div><strong>0</strong><small>Total team</small></div>
+      </div>
+      <div class="team-stat-card">
+        <span class="stat-icon"><svg viewBox="0 0 24 24"><path d="M3 9h18v12H3zM2 6h20v4H2zM12 6v15M12 6H7a2.5 2.5 0 1 1 2.5-2.5C9.5 5 12 6 12 6Zm0 0h5a2.5 2.5 0 1 0-2.5-2.5C14.5 5 12 6 12 6Z"/></svg></span>
+        <div><strong>UGX 0</strong><small>Team income</small></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="team-level-heading"><h2>Team details</h2><span>Commission levels</span></div>
+  {% for level,pct in [('Level 1','10%'),('Level 2','5%'),('Level 3','2%')] %}
+  <section class="team-level-card">
+    <header><span><i class="level-dot">{{ loop.index }}</i>{{ level }}</span><strong>{{ pct }} commission</strong></header>
+    <div class="level-stats"><div><strong>0</strong><small>Team size</small></div><div><strong>UGX 0</strong><small>Bonus</small></div></div>
+  </section>
+  {% endfor %}
+</section>
+<script>
+document.querySelectorAll('.copy-btn').forEach(function(button){
+  button.addEventListener('click', async function(){
+    const value = button.getAttribute('data-copy') || '';
+    try {
+      if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(value);
+      else {
+        const field=document.createElement('textarea'); field.value=value;
+        field.style.position='fixed'; field.style.opacity='0'; document.body.appendChild(field);
+        field.select(); document.execCommand('copy'); field.remove();
+      }
+      const old=button.innerHTML; button.textContent='Copied!';
+      setTimeout(()=>button.innerHTML=old,1400);
+    } catch(e) { button.textContent='Copy failed'; }
+  });
+});
+</script>
+{% endblock %}

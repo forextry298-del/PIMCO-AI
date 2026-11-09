@@ -1,0 +1,14 @@
+{% extends 'base.html' %}{% block content %}
+<section class="finance-shell deposit-shell">
+ <div class="finance-heading"><a href="{{url_for('my')}}" aria-label="Back">‹</a><div><span class="eyebrow">ADD FUNDS</span><h1>Deposit</h1><p>Choose your preferred payment method</p></div><span class="heading-icon">＋</span></div>
+ <form method="post" id="dep" class="finance-form">
+  <label class="method-label">Payment method</label><div class="method-grid">
+   <label class="method-option"><input type="radio" name="method" value="mtn" checked><span class="method-symbol">M</span><span><b>MTN Mobile Money</b><small>Uganda Shillings</small></span><i></i></label>
+   <label class="method-option"><input type="radio" name="method" value="airtel"><span class="method-symbol airtel">A</span><span><b>Airtel Money</b><small>Uganda Shillings</small></span><i></i></label>
+   <label class="method-option method-option-usdt"><input type="radio" name="method" value="usdt"><span class="method-symbol usdt">₮</span><span><b>USDT</b><small>Not available for your account</small></span><i></i></label>
+  </div>
+  <label for="deposit-amount">Deposit amount</label><div class="amount-field"><span>UGX</span><input id="deposit-amount" name="amount" type="number" min="1" step="1" placeholder="Enter amount" required></div>
+  <div class="finance-hint"><b>Payment instructions</b><p>After you continue, your deposit request will be recorded as pending and the payment instructions will be displayed.</p></div>
+  <button class="finance-submit" type="submit">Continue to payment <span>→</span></button>
+ </form>
+</section><script>document.getElementById('dep').addEventListener('submit',function(e){if(document.querySelector('[name="method"]:checked').value==='usdt'){e.preventDefault();alert('USDT is not available for your account.');}})</script>{% endblock %}
