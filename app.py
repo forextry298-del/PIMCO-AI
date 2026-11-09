@@ -1,5 +1,5 @@
 import os, sqlite3, secrets, datetime, json
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
@@ -200,8 +200,10 @@ def logout():
 def my():
     if not logged_in(): return redirect(url_for("auth"))
     with db() as con:
-        user = con.execute("SELECT referral_code FROM users WHERE id=?", (session["user_id"],)).fetchone()
-    return render_template("my.html", active="my", referral=user["referral_code"] if user else "")
+        user = con.execute("SELECT referral_code, COALESCE(wallet_balance,0) AS wallet_balance, COALESCE(balance,0) AS balance FROM users WHERE id=?", (session["user_id"],)).fetchone()
+    return render_template("my.html", active="my", referral=user["referral_code"] if user else "",
+        wallet_balance=float(user["wallet_balance"] or 0) if user else 0,
+        balance=float(user["balance"] or 0) if user else 0)
 
 @app.route("/ai")
 def ai():
@@ -211,6 +213,42 @@ def ai():
         series = "ALL"
     return render_template("ai.html", active="ai", series=series)
 
+
+
+# Local PIMCO AI platform FAQ assistant. This is not connected to an external LLM.
+def pimco_ai_answer(message):
+    q=(message or '').strip().lower()
+    if not q: return 'Please type a question about PIMCO AI.'
+    if any(x in q for x in ('legit','legitimate','real company','scam','trustworthy','safe to invest')):
+        return ('I can explain the features shown on this PIMCO AI website, but I cannot independently verify that the company is legitimate, licensed, financially safe, or that withdrawals will be paid. Before depositing, independently verify the legal company name, registration and any required financial authorization with the relevant regulator. Check independently documented withdrawals and do not invest money you cannot afford to lose.')
+    if any(x in q for x in ('deposit','add money','recharge','fund wallet')):
+        return 'Open Deposit, enter the amount and required Mobile Money details, then submit. A deposit should only be treated as credited after it is verified and approved. Check the minimum and payment instructions shown in your account before paying.'
+    if any(x in q for x in ('withdraw','cash out','payout')):
+        return 'Open Withdraw, enter the amount, receiving Mobile Money number and network, then submit. The request may remain pending while reviewed. Check the minimum and any fee displayed on the Withdrawal page before confirming.'
+    if 'wallet' in q: return 'Wallet is the deposit-funds balance. It is separate from Balance, which represents platform earnings. Check your transaction history for confirmed entries.'
+    if any(x in q for x in ('balance','earning','income','daily return')):
+        return 'Balance is shown separately from Wallet and represents platform earnings in this project. Displayed machine or plan figures are not a guarantee of profit or payment. Review the actual terms and your transaction history.'
+    if any(x in q for x in ('referral','invite','team','commission','level')):
+        return 'Use Invite or My Team to view your referral link and team information. Commissions depend on configured levels and qualifying approved deposits. Check the team and ledger records to confirm any commission credited.'
+    if any(x in q for x in ('machine','plan','vip','series','purchase')):
+        return 'Open the AI tab to browse machine series and their displayed prices, daily figures and terms. These figures are platform information, not independently verified returns. Read the lock period and terms before purchasing.'
+    if any(x in q for x in ('account','password','profile','settings','login','register')):
+        return 'Use My → Settings for account options. Keep your password private. Never share your password or one-time verification codes.'
+    if any(x in q for x in ('support','manager','help','contact')):
+        return 'For account-specific help, use the Manager or support contact shown inside your account. Never share your password, PIN or one-time verification code.'
+    if any(x in q for x in ('hello','hi','hey','good morning','good evening')):
+        return 'Hello! I am the PIMCO AI platform assistant. Ask about deposits, withdrawals, Wallet, Balance, machines, referrals or account settings.'
+    return 'I can help with deposits, withdrawals, Wallet versus Balance, machine plans, referrals, commissions and account settings. Try asking one of those questions. For account-specific records, check your transaction history or contact support.'
+
+@app.route('/assistant', methods=['GET','POST'])
+def assistant_chat():
+    if not logged_in(): return redirect(url_for('auth'))
+    if request.method == 'POST':
+        data=request.get_json(silent=True) or {}
+        message=str(data.get('message','')).strip()[:700]
+        if not message: return jsonify({'reply':'Please type a question.'}),400
+        return jsonify({'reply':pimco_ai_answer(message)})
+    return render_template('assistant.html', active='ai')
 
 MACHINE_CATALOG = [
     {"code":"A1","series":"A","image":"machine-a1.jpg","price":30000,"daily":3000,"days":16,"lock":"16 days"},
@@ -465,7 +503,9 @@ def deposit():
             record_tx(con,session['user_id'],'Deposit',amount,'pending',f'DEP-{cur.lastrowid}')
         session['deposit_pending_id']=cur.lastrowid
         return redirect(url_for('deposit_instructions'))
-    return render_template('deposit.html', active='my')
+    with db() as con:
+        user=con.execute("SELECT COALESCE(wallet_balance,0) AS wallet_balance FROM users WHERE id=?",(session['user_id'],)).fetchone()
+    return render_template('deposit.html',active='my',balance=float(user['wallet_balance'] or 0) if user else 0)
 
 @app.route('/deposit/instructions')
 def deposit_instructions():
@@ -492,13 +532,13 @@ def withdraw():
             if 'fee' not in columns: con.execute("ALTER TABLE withdrawals ADD COLUMN fee REAL NOT NULL DEFAULT 0")
             if 'payout_amount' not in columns: con.execute("ALTER TABLE withdrawals ADD COLUMN payout_amount REAL NOT NULL DEFAULT 0")
             con.execute('BEGIN IMMEDIATE')
-            user = con.execute('SELECT balance FROM users WHERE id=?', (session['user_id'],)).fetchone()
-            available = float(user['balance'] or 0) if user else 0
+            user = con.execute('SELECT wallet_balance FROM users WHERE id=?', (session['user_id'],)).fetchone()
+            available = float(user['wallet_balance'] or 0) if user else 0
             if available < amount:
                 flash('Insufficient balance. Your available balance is UGX {:,.0f}.'.format(available), 'error')
                 return redirect(url_for('withdraw'))
             debit = con.execute(
-                'UPDATE users SET balance=COALESCE(balance,0)-? WHERE id=? AND COALESCE(balance,0)>=?',
+                'UPDATE users SET wallet_balance=COALESCE(wallet_balance,0)-? WHERE id=? AND COALESCE(wallet_balance,0)>=?',
                 (amount, session['user_id'], amount))
             if debit.rowcount != 1:
                 flash('Insufficient balance. Please try again.', 'error')
@@ -514,7 +554,7 @@ def withdraw():
     with db() as con:
         user = con.execute('SELECT * FROM users WHERE id=?', (session['user_id'],)).fetchone()
     return render_template('withdraw.html', active='my',
-        balance=float(user['balance'] or 0) if user else 0,
+        balance=float(user['wallet_balance'] or 0) if user else 0,
         registered_phone=user['phone'] if user and 'phone' in user.keys() else '')
 
 @app.route('/bill')
@@ -535,17 +575,21 @@ def manager():
     return render_template('manager.html',active='my',messages=messages)
 
 
+# Existing referral rates retained: 2% for each of the three levels.
+REFERRAL_LEVEL_PERCENTAGES = {1: 2.0, 2: 2.0, 3: 2.0}
 def credit_team_commissions(con, deposit_id, depositor_id, deposit_amount):
     con.execute("CREATE TABLE IF NOT EXISTS team_commissions (id INTEGER PRIMARY KEY AUTOINCREMENT, deposit_id INTEGER NOT NULL, depositor_id INTEGER NOT NULL, beneficiary_id INTEGER NOT NULL, level INTEGER NOT NULL, amount REAL NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE(deposit_id,beneficiary_id,level))")
     row=con.execute("SELECT referred_by FROM users WHERE id=?",(depositor_id,)).fetchone()
     parent_id=row["referred_by"] if row else None
     for level in (1,2,3):
         if not parent_id: break
-        commission=round(float(deposit_amount)*0.02,2)
-        cur=con.execute("INSERT OR IGNORE INTO team_commissions(deposit_id,depositor_id,beneficiary_id,level,amount) VALUES(?,?,?,?,?)",(deposit_id,depositor_id,parent_id,level,commission))
-        if cur.rowcount:
-            con.execute("UPDATE users SET balance=COALESCE(balance,0)+? WHERE id=?",(commission,parent_id))
-            con.execute("INSERT INTO wallet_ledger(user_id,entry_type,amount,source,reference) VALUES(?,?,?,?,?)",(parent_id,"credit",commission,"team_deposit_commission",f"DEP-{deposit_id}-LV{level}"))
+        pct=float(REFERRAL_LEVEL_PERCENTAGES.get(level,0))
+        commission=round(float(deposit_amount)*pct/100.0,2)
+        if commission>0:
+            cur=con.execute("INSERT OR IGNORE INTO team_commissions(deposit_id,depositor_id,beneficiary_id,level,amount) VALUES(?,?,?,?,?)",(deposit_id,depositor_id,parent_id,level,commission))
+            if cur.rowcount:
+                con.execute("UPDATE users SET balance=COALESCE(balance,0)+? WHERE id=?",(commission,parent_id))
+                con.execute("INSERT INTO wallet_ledger(user_id,entry_type,amount,source,reference) VALUES(?,?,?,?,?)",(parent_id,"credit",commission,"team_deposit_commission",f"DEP-{deposit_id}-LV{level}"))
         parent=con.execute("SELECT referred_by FROM users WHERE id=?",(parent_id,)).fetchone()
         parent_id=parent["referred_by"] if parent else None
 
@@ -562,7 +606,7 @@ def admin():
                     status='approved' if action=='approve_deposit' else 'rejected'
                     con.execute('UPDATE deposits SET status=?,approved_at=CURRENT_TIMESTAMP WHERE id=?',(status,rid))
                     if status=='approved':
-                        con.execute('UPDATE users SET balance=COALESCE(balance,0)+? WHERE id=?',(row['amount'],row['user_id']))
+                        con.execute('UPDATE users SET wallet_balance=COALESCE(wallet_balance,0)+? WHERE id=?',(row['amount'],row['user_id']))
                         con.execute('INSERT INTO wallet_ledger(user_id,entry_type,amount,source,reference) VALUES(?,?,?,?,?)',(row['user_id'],'credit',row['amount'],'deposit_approved',str(rid)))
                         credit_team_commissions(con,int(rid),row['user_id'],row['amount'])
                     con.execute('UPDATE transactions SET status=? WHERE user_id=? AND kind="Deposit" AND reference=?',(status,row['user_id'],f'DEP-{rid}'))
@@ -572,7 +616,7 @@ def admin():
                 if row:
                     status='approved' if action=='approve_withdrawal' else 'rejected'
                     con.execute('UPDATE withdrawals SET status=?,reviewed_at=CURRENT_TIMESTAMP WHERE id=?',(status,rid))
-                    if status=='rejected': con.execute('UPDATE users SET balance=balance+? WHERE id=?',(row['amount'],row['user_id']))
+                    if status=='rejected': con.execute('UPDATE users SET wallet_balance=COALESCE(wallet_balance,0)+? WHERE id=?',(row['amount'],row['user_id']))
                     con.execute('UPDATE transactions SET status=? WHERE user_id=? AND kind="Withdrawal" AND reference=?',(status,row['user_id'],f'WDR-{rid}'))
             elif action=='block_user':
                 con.execute('UPDATE users SET password_hash=? WHERE id=?',(generate_password_hash(secrets.token_urlsafe(32)),rid))

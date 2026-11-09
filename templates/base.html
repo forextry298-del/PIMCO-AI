@@ -11,7 +11,7 @@
 
 <main class="page">{% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category, m in messages %}<div class="notice {% if category == 'error' %}notice-error{% elif category == 'success' %}notice-success{% endif %}">{{m}}</div>{% endfor %}{% endif %}{% endwith %}{% block content %}{% endblock %}</main>
 {% if session.get('user_id') %}
-<a class="floating-support" href="{{ url_for('home') }}#messages" aria-label="Open customer support">
+<a class="floating-support" href="{{ url_for('assistant_chat') }}" aria-label="Open customer support">
   <span class="support-online"></span>
   <svg viewBox="0 0 24 24" aria-hidden="true">
     <path d="M3 13v-1a9 9 0 0 1 18 0v1"/>

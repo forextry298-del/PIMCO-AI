@@ -1,24 +1,35 @@
 {% extends "base.html" %}
 {% block content %}
 <style>
-.auth-stage{box-sizing:border-box;position:relative;isolation:isolate;overflow:hidden;width:100%;min-height:calc(100svh - 24px);display:flex;align-items:center;justify-content:center;padding:14px 12px 20px;color:#f7f3e9;background:radial-gradient(ellipse at 75% 40%,rgba(190,151,75,.13),transparent 36%),linear-gradient(145deg,#171613 0%,#29251e 48%,#11100e 100%)}
-.auth-stage:before{content:"";position:absolute;inset:0;z-index:-1;opacity:.35;background:repeating-linear-gradient(0deg,transparent 0 34px,rgba(220,190,130,.10) 35px 36px,transparent 37px 54px)}
-.auth-content{box-sizing:border-box;width:100%;max-width:340px;margin:auto}
-.auth-brand{display:flex;flex-direction:column;align-items:center;text-align:center;margin:0 0 16px}
-.auth-logo{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:#eee5d2;border:4px solid #c5a568;box-shadow:0 3px 14px #0006;margin-bottom:9px}
-.auth-logo span{font-family:Georgia,serif;font-size:43px;line-height:1;font-weight:900;color:#302719}
-.auth-brand-name{font-family:Georgia,serif;font-size:28px;letter-spacing:3px;font-weight:700;line-height:1.1;color:#f7f0df}
-.auth-brand-sub{font-size:10px;letter-spacing:5px;color:#d2b777;font-weight:700;margin-top:5px}
-.auth-mode-title{text-align:center;font-size:13px;letter-spacing:5px;font-weight:700;color:#e6d6b5;margin:14px 0 15px}
-.wave-auth-form{box-sizing:border-box;width:100%;display:flex;flex-direction:column;gap:9px}
-.wave-field{box-sizing:border-box;width:100%;height:49px;min-height:49px;display:flex;align-items:center;padding:0 13px;border-radius:28px;background:rgba(255,255,255,.075);border:1px solid rgba(219,196,153,.38)}
-.wave-field .auth-symbol{width:26px;flex:0 0 26px;color:#d4b777;font-size:17px;text-align:left}
-.wave-field input{box-sizing:border-box;width:100%;min-width:0;height:46px;border:0;outline:0;background:transparent;color:#fff8e9;font-size:13px;padding:0 6px}
-.wave-field input::placeholder{color:rgba(245,238,222,.68);opacity:1}
-.wave-submit{width:100%;height:48px;min-height:48px;border:0;border-radius:28px;background:linear-gradient(110deg,#a98543,#d8bd80);color:#211b11;font-weight:800;font-size:14px;box-shadow:0 5px 14px rgba(0,0,0,.22);margin-top:3px}
-.wave-auth-switch{text-align:center;font-size:12px;line-height:1.4;padding-top:15px;color:rgba(255,255,255,.78)}
-.wave-auth-switch a{color:#e2c47b;text-decoration:underline;text-underline-offset:3px;font-weight:800}
-.auth-footer{text-align:center;color:#bdb29b;font-size:9px;letter-spacing:1px;margin-top:14px;opacity:.8}
+/* Compact PIMCO authentication — black/gold wallet styling with green waves */
+body:has(.auth-stage){background:#070b0e!important;color:#f5f7f8!important;font-family:Arial,sans-serif!important;padding-bottom:0!important;min-height:100vh;overflow-x:hidden}
+body:has(.auth-stage) .page{width:100%!important;max-width:500px!important;min-height:100vh;padding:0 12px 12px!important;margin:0 auto;background:transparent!important;position:relative;z-index:1}
+body:has(.auth-stage) .notice{background:#242424!important;border:1px solid rgba(255,210,28,.45)!important;color:#fff!important;border-radius:10px!important;margin:8px 0!important}
+.auth-stage{box-sizing:border-box;position:relative;isolation:isolate;overflow:hidden;width:100%;min-height:calc(100svh - 12px);display:flex;align-items:center;justify-content:center;padding:12px 8px 18px;color:#f5f5f5;background:linear-gradient(145deg,#080b0e 0%,#12191d 55%,#080b0e 100%)}
+.auth-stage:before,.auth-stage:after{content:"";position:absolute;z-index:-1;left:-35%;width:170%;pointer-events:none}
+.auth-stage:before{height:48%;bottom:-5%;opacity:.7;background-image:radial-gradient(circle,#16a36a 1.2px,transparent 1.8px),radial-gradient(circle,#087a50 1px,transparent 1.6px);background-size:20px 20px,20px 20px;background-position:0 0,10px 10px;transform:perspective(260px) rotateX(56deg) scale(1.18);transform-origin:center bottom;mask-image:linear-gradient(to bottom,transparent 0%,#000 30%,#000 85%,transparent 100%);animation:authGreenWave 10s linear infinite}
+.auth-stage:after{height:38%;bottom:6%;opacity:.32;background:repeating-radial-gradient(ellipse at 50% 100%,transparent 0 16px,rgba(22,163,106,.35) 17px 18px,transparent 19px 32px);transform:perspective(300px) rotateX(62deg);mask-image:linear-gradient(to bottom,transparent,#000 35%,transparent 100%);animation:authGreenPulse 5s ease-in-out infinite alternate}
+@keyframes authGreenWave{from{background-position:0 0,10px 10px}to{background-position:0 40px,10px 50px}}
+@keyframes authGreenPulse{from{opacity:.16;transform:perspective(300px) rotateX(62deg) translateY(5px)}to{opacity:.4;transform:perspective(300px) rotateX(62deg) translateY(-5px)}}
+.auth-content{box-sizing:border-box;width:100%;max-width:325px;margin:auto;position:relative;z-index:1;padding:16px 15px 13px;border:1px solid rgba(255,210,28,.3);border-radius:17px;background:rgba(20,23,24,.94);box-shadow:0 12px 34px rgba(0,0,0,.45)}
+.auth-brand{display:flex;flex-direction:column;align-items:center;text-align:center;margin:0 0 8px}
+.auth-logo{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#242424;border:2px solid #ffd21c;box-shadow:0 3px 12px #0008;margin-bottom:5px}
+.auth-logo span{font-family:Georgia,serif;font-size:31px;line-height:1;font-weight:900;color:#ffd21c}
+.auth-brand-name{font-family:Georgia,serif;font-size:23px;letter-spacing:3px;font-weight:800;line-height:1.1;color:#ffd21c}
+.auth-brand-sub{font-size:8px;letter-spacing:4px;color:#c9c9c9;font-weight:700;margin-top:3px}
+.auth-mode-title{text-align:center;font-size:12px;letter-spacing:3px;font-weight:800;color:#ffd21c;margin:9px 0 11px}
+.wave-auth-form{box-sizing:border-box;width:100%;display:flex;flex-direction:column;gap:7px}
+.wave-field{box-sizing:border-box;width:100%;height:41px;min-height:41px;display:flex;align-items:center;padding:0 11px;border-radius:10px;background:#242424;border:1px solid #4a4a4a}
+.wave-field:focus-within{border-color:#ffd21c;box-shadow:0 0 0 2px rgba(255,210,28,.12)}
+.wave-field .auth-symbol{width:22px;flex:0 0 22px;color:#ffd21c;font-size:15px;text-align:left}
+.wave-field input{box-sizing:border-box;width:100%;min-width:0;height:39px;border:0;outline:0;background:transparent;color:#fff;font-size:12px;padding:0 5px}
+.wave-field input::placeholder{color:#aaa;opacity:1}
+.wave-submit{width:100%;height:42px;min-height:42px;border:0;border-radius:10px;background:linear-gradient(110deg,#e4b900,#ffd21c);color:#171717;font-weight:800;font-size:13px;box-shadow:0 4px 12px rgba(0,0,0,.25);margin-top:3px}
+.wave-auth-switch{text-align:center;font-size:11px;line-height:1.4;padding-top:9px;color:#c8c8c8}
+.wave-auth-switch a{color:#ffd21c;text-decoration:underline;text-underline-offset:3px;font-weight:800}
+.auth-footer{text-align:center;color:#888;font-size:8px;letter-spacing:1px;margin-top:9px;opacity:.9}
+@media(max-height:650px){.auth-stage{align-items:flex-start;padding-top:8px}.auth-content{padding:11px 13px 9px}.auth-brand{margin-bottom:5px}.auth-logo{width:39px;height:39px}.auth-logo span{font-size:27px}.auth-mode-title{margin:6px 0 8px}.wave-auth-form{gap:6px}.wave-field{height:38px;min-height:38px}.wave-field input{height:36px}.wave-submit{height:39px;min-height:39px}.wave-auth-switch{padding-top:6px}}
+@media(prefers-reduced-motion:reduce){.auth-stage:before,.auth-stage:after{animation:none!important}}
 </style>
 <section class="auth-stage"><div class="auth-content">
   <div class="auth-brand"><div class="auth-logo"><span>P</span></div><div class="auth-brand-name">PIMCO</div><div class="auth-brand-sub">INVESTMENT</div></div>

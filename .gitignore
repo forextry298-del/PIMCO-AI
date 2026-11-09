@@ -3,3 +3,24 @@
 *.db
 __pycache__/
 *.pyc
+
+# Local databases and instance data
+instance/
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+
+# Backups
+*.bak
+*.bak.*
+*.backup
+*.backup_*
+*.before_*
+*.backup_wallet_referral_*
+*.pyc
+__pycache__/
+
+# Secrets and local environment
+.env
+.env.*

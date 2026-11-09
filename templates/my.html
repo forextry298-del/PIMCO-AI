@@ -11,8 +11,8 @@
 
   <section class="my-wallet-card" aria-label="Wallet and balance">
     <div class="my-wallet-values">
-      <div><span>Wallet</span><strong>0.00</strong></div>
-      <div><span>Balance</span><strong>0.00</strong></div>
+      <div><span>Wallet · Deposits</span><strong>UGX {{ "{:,.0f}".format(wallet_balance|default(0)|float) }}</strong></div>
+      <div><span>Balance · Earnings</span><strong>UGX {{ "{:,.0f}".format(balance|default(0)|float) }}</strong></div>
     </div>
     <span class="my-wallet-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6M6 15l6 6 6-6"/></svg></span>
   </section>

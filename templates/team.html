@@ -15,8 +15,8 @@
       </button>
     </div>
     <div class="invite-copy-row link-row">
-      <div class="invite-copy-text"><small>YOUR INVITE LINK</small><strong>http://pimco-ai.fly.dev/pages/login/index?type=2&code={{ referral }}</strong></div>
-      <button type="button" class="copy-btn" data-copy="http://pimco-ai.fly.dev/pages/login/index?type=2&code={{ referral }}">
+      <div class="invite-copy-text"><small>YOUR INVITE LINK</small><strong>{{ url_for('auth', mode='signup', ref=referral, _external=True) }}</strong></div>
+      <button type="button" class="copy-btn" data-copy="{{ url_for('auth', mode='signup', ref=referral, _external=True) }}">
         <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.1 0l3-3A5 5 0 0 0 13 2.9l-1.7 1.7M14 11a5 5 0 0 0-7.1 0l-3 3a5 5 0 0 0 7.1 7.1l1.7-1.7"/></svg>Copy link
       </button>
     </div>
