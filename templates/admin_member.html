@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+.member-admin{max-width:720px;margin:12px auto;padding:10px;color:#eee}
+.member-admin .panel{background:#191b25;border:1px solid #383b49;border-radius:11px;padding:12px;margin:10px 0}
+.member-admin h2,.member-admin h3{color:#e8bd62;margin:3px 0 10px}
+.member-admin p{margin:5px 0;overflow-wrap:anywhere}
+.member-admin input,.member-admin button{box-sizing:border-box;width:100%;padding:10px;margin:4px 0;border-radius:8px;border:1px solid #444;background:#292c38;color:#fff;font-size:14px}
+.member-admin button{background:#c99b42;color:#171717;border:0;font-weight:bold}
+.member-admin .danger{background:#8e3030;color:white}
+.member-admin .grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.member-admin .person{padding:7px 0;border-bottom:1px solid #333}
+@media(max-width:430px){.member-admin{padding:7px}.member-admin .grid{grid-template-columns:1fr}}
+</style>
+<div class="member-admin">
+<p><a href="{{ url_for('admin') }}">← Back to Admin</a></p>
+<div class="panel"><h2>Member #{{ member.id }}</h2>
+<p><b>Username:</b> {{ member.username or '—' }}</p><p><b>Phone:</b> {{ member.phone or '—' }}</p>
+<p><b>Email:</b> {{ member.email or '—' }}</p><p><b>Invitation code:</b> {{ member.referral_code }}</p>
+<p><b>Available balance:</b> UGX {{ '%.2f'|format(member.balance or 0) }}</p>
+<p><b>Wallet balance:</b> UGX {{ '%.2f'|format(member.wallet_balance or 0) }}</p>
+<p><b>Status:</b> {{ 'BLOCKED' if member.is_blocked else 'ACTIVE' }}</p></div>
+<div class="panel"><h3>Edit available balance</h3>
+<form method="post" class="grid"><input type="hidden" name="action" value="add_balance"><input name="amount" type="number" min="0" step="0.01" placeholder="Amount" required><button>Add</button></form>
+<form method="post" class="grid"><input type="hidden" name="action" value="subtract_balance"><input name="amount" type="number" min="0" step="0.01" placeholder="Amount" required><button>Subtract</button></form>
+<form method="post" class="grid"><input type="hidden" name="action" value="set_balance"><input name="amount" type="number" min="0" step="0.01" placeholder="New balance" required><button>Set balance</button></form></div>
+<div class="panel"><h3>Account controls</h3>
+{% if member.is_blocked %}<form method="post"><input type="hidden" name="action" value="unblock"><button>Unblock user</button></form>
+{% else %}<form method="post"><input type="hidden" name="action" value="block"><button class="danger">Block user</button></form>{% endif %}
+<form method="post"><input type="hidden" name="action" value="reset_password"><input type="password" name="new_password" minlength="8" placeholder="New password (8+ characters)" required><button>Reset password</button></form></div>
+{% for title, people in [('Level 1',team1),('Level 2',team2),('Level 3',team3)] %}
+<div class="panel"><h3>{{ title }} — {{ people|length }} users</h3>
+{% for p in people %}<div class="person">#{{ p.id }} · {{ p.username or p.phone or 'Member' }} · UGX {{ '%.2f'|format(p.balance or 0) }}</div>
+{% else %}<p>No members</p>{% endfor %}</div>{% endfor %}
+</div>
+{% endblock %}

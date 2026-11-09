@@ -32,6 +32,8 @@ def init_db():
             con.execute("ALTER TABLE users ADD COLUMN username TEXT")
         if "country" not in columns:
             con.execute("ALTER TABLE users ADD COLUMN country TEXT DEFAULT 'Uganda (UGX)'")
+        if "is_blocked" not in columns:
+            con.execute("ALTER TABLE users ADD COLUMN is_blocked INTEGER NOT NULL DEFAULT 0")
         if "referred_by" not in columns:
             con.execute("ALTER TABLE users ADD COLUMN referred_by INTEGER")
         con.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone ON users(phone)")
@@ -90,7 +92,24 @@ def init_db():
             credited_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(user_id,vip_level), FOREIGN KEY(user_id) REFERENCES users(id)
         )""")
+
+def make_invite_code(con):
+    alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+    for _ in range(100):
+        code = "".join(secrets.choice(alphabet) for _ in range(5))
+        if not con.execute("SELECT 1 FROM users WHERE referral_code=?", (code,)).fetchone():
+            return code
+    raise RuntimeError("Unable to generate a unique invitation code")
+
 init_db()
+with db() as con:
+    seen=set()
+    for row in con.execute("SELECT id, referral_code FROM users ORDER BY id").fetchall():
+        code=(row["referral_code"] or "").strip().upper()
+        if len(code)!=5 or code in seen:
+            code=make_invite_code(con)
+            con.execute("UPDATE users SET referral_code=? WHERE id=?", (code,row["id"]))
+        seen.add(code)
 
 def logged_in():
     return bool(session.get("user_id"))
@@ -100,8 +119,31 @@ def home():
     if not logged_in():
         return redirect(url_for("auth"))
     show_login_notice = bool(session.pop("show_login_notice", False))
-    return render_template("home.html", active="home", show_login_notice=show_login_notice)
+    uid = session["user_id"]
+    with db() as admin_con:
+        admin_row=admin_con.execute("SELECT phone FROM users WHERE id=?", (uid,)).fetchone()
+    admin_digits="".join(ch for ch in str(admin_row["phone"] or "") if ch.isdigit()) if admin_row else ""
+    admin_access=admin_digits.endswith("758878297")
 
+    today = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=3))).date().isoformat()
+    with db() as con:
+        con.execute("CREATE TABLE IF NOT EXISTS team_commissions (id INTEGER PRIMARY KEY AUTOINCREMENT, deposit_id INTEGER NOT NULL, depositor_id INTEGER NOT NULL, beneficiary_id INTEGER NOT NULL, level INTEGER NOT NULL, amount REAL NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE(deposit_id,beneficiary_id,level))")
+        ai_income=con.execute("SELECT COALESCE(SUM(amount),0) FROM daily_earnings WHERE user_id=?",(uid,)).fetchone()[0] or 0
+        today_income=con.execute("SELECT COALESCE(SUM(amount),0) FROM daily_earnings WHERE user_id=? AND earning_date IN (?,?)",(uid,today,"LOCKED-"+today)).fetchone()[0] or 0
+        deposit_total=con.execute("SELECT COALESCE(SUM(amount),0) FROM deposits WHERE user_id=? AND LOWER(status)='approved'",(uid,)).fetchone()[0] or 0
+        withdrawal_total=con.execute("SELECT COALESCE(SUM(amount),0) FROM withdrawals WHERE user_id=? AND LOWER(status) IN ('approved','pending')",(uid,)).fetchone()[0] or 0
+        invite_count=con.execute("SELECT COUNT(*) FROM users WHERE referred_by=?",(uid,)).fetchone()[0]
+        lv1=[r[0] for r in con.execute("SELECT id FROM users WHERE referred_by=?",(uid,)).fetchall()]
+        lv2=[]
+        for parent in lv1:
+            lv2.extend(r[0] for r in con.execute("SELECT id FROM users WHERE referred_by=?",(parent,)).fetchall())
+        lv3=[]
+        for parent in lv2:
+            lv3.extend(r[0] for r in con.execute("SELECT id FROM users WHERE referred_by=?",(parent,)).fetchall())
+        team_count=len(lv1)+len(lv2)+len(lv3)
+        team_income=con.execute("SELECT COALESCE(SUM(amount),0) FROM team_commissions WHERE beneficiary_id=?",(uid,)).fetchone()[0] or 0
+    metrics={"deposit_total":float(deposit_total),"withdrawal_total":float(withdrawal_total),"ai_income":float(ai_income),"today_income":float(today_income),"invite_count":int(invite_count),"team_count":int(team_count),"team_income":float(team_income)}
+    return render_template("home.html",active="home",show_login_notice=show_login_notice,metrics=metrics,admin_access=admin_access)
 @app.route("/auth", methods=["GET", "POST"])
 def auth():
     mode = request.args.get("mode", "signin")
@@ -125,7 +167,7 @@ def auth():
                         inviter = con.execute("SELECT id FROM users WHERE UPPER(referral_code)=?", (invite_code,)).fetchone() if invite_code else None
                         cur = con.execute(
                             "INSERT INTO users(email,phone,username,country,password_hash,referral_code,referred_by) VALUES(?,?,?,?,?,?,?)",
-                            (None, phone, None, "Uganda (UGX)", generate_password_hash(password), secrets.token_hex(4).upper(), inviter["id"] if inviter else None)
+                            (None, phone, None, "Uganda (UGX)", generate_password_hash(password), make_invite_code(con), inviter["id"] if inviter else None)
                         )
                         user_id = cur.lastrowid
                     session["user_id"] = user_id
@@ -335,10 +377,40 @@ def income():
 
 
 ADMIN_PHONE = "0758878297"
-DEPOSIT_PHONE = "0731199883"
+DEPOSIT_PHONE = '0731199883'
 
 def is_admin():
-    return bool(session.get("user_id")) and session.get("phone") == ADMIN_PHONE
+    uid = session.get("user_id")
+    if not uid:
+        return False
+    try:
+        with db() as con:
+            row = con.execute("SELECT phone FROM users WHERE id=?", (uid,)).fetchone()
+        digits = "".join(ch for ch in str(row["phone"] or "") if ch.isdigit()) if row else ""
+        return digits.endswith("758878297")
+    except Exception:
+        return False
+
+    if not uid:
+        return False
+    try:
+        with db() as con:
+            row = con.execute("SELECT phone FROM users WHERE id=?", (uid,)).fetchone()
+        digits = "".join(ch for ch in str(row["phone"] or "") if ch.isdigit()) if row else ""
+        return digits.endswith("758878297")
+    except Exception:
+        return False
+
+    if not uid:
+        return False
+    try:
+        with db() as con:
+            row = con.execute("SELECT phone FROM users WHERE id=?", (uid,)).fetchone()
+        digits = "".join(ch for ch in str(row["phone"] or "") if ch.isdigit()) if row else ""
+        return digits.endswith("758878297")
+    except Exception:
+        return False
+
 
 def record_tx(con, uid, kind, amount, status, reference=""):
     con.execute("INSERT INTO transactions(user_id,kind,amount,status,reference) VALUES(?,?,?,?,?)", (uid,kind,amount,status,reference))
@@ -398,7 +470,7 @@ def deposit():
 @app.route('/deposit/instructions')
 def deposit_instructions():
     if not logged_in(): return redirect(url_for('auth'))
-    return render_template('deposit_instructions.html', active='my', recipient=DEPOSIT_PHONE, recipient_name='Colins')
+    return render_template('deposit_instructions.html', active='my', recipient=DEPOSIT_PHONE, recipient_name='Collins')
 
 @app.route('/withdraw', methods=['GET','POST'])
 def withdraw():
@@ -408,7 +480,7 @@ def withdraw():
         except (TypeError, ValueError): amount = 0
         phone = request.form.get('phone', '').strip()
         network = request.form.get('network', '').strip()
-        if amount <= 0 or not phone or network not in ('MTN', 'Airtel'):
+        if amount < 3000 or not phone or network not in ('MTN', 'Airtel'):
             flash('Enter a valid amount, mobile money number and network.', 'error')
             return redirect(url_for('withdraw'))
         fee = round(amount * 0.10, 2)
@@ -462,6 +534,21 @@ def manager():
     with db() as con: messages=con.execute('SELECT * FROM chats WHERE sender_id=? OR recipient_id=? ORDER BY id',(session['user_id'],session['user_id'])).fetchall()
     return render_template('manager.html',active='my',messages=messages)
 
+
+def credit_team_commissions(con, deposit_id, depositor_id, deposit_amount):
+    con.execute("CREATE TABLE IF NOT EXISTS team_commissions (id INTEGER PRIMARY KEY AUTOINCREMENT, deposit_id INTEGER NOT NULL, depositor_id INTEGER NOT NULL, beneficiary_id INTEGER NOT NULL, level INTEGER NOT NULL, amount REAL NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE(deposit_id,beneficiary_id,level))")
+    row=con.execute("SELECT referred_by FROM users WHERE id=?",(depositor_id,)).fetchone()
+    parent_id=row["referred_by"] if row else None
+    for level in (1,2,3):
+        if not parent_id: break
+        commission=round(float(deposit_amount)*0.02,2)
+        cur=con.execute("INSERT OR IGNORE INTO team_commissions(deposit_id,depositor_id,beneficiary_id,level,amount) VALUES(?,?,?,?,?)",(deposit_id,depositor_id,parent_id,level,commission))
+        if cur.rowcount:
+            con.execute("UPDATE users SET balance=COALESCE(balance,0)+? WHERE id=?",(commission,parent_id))
+            con.execute("INSERT INTO wallet_ledger(user_id,entry_type,amount,source,reference) VALUES(?,?,?,?,?)",(parent_id,"credit",commission,"team_deposit_commission",f"DEP-{deposit_id}-LV{level}"))
+        parent=con.execute("SELECT referred_by FROM users WHERE id=?",(parent_id,)).fetchone()
+        parent_id=parent["referred_by"] if parent else None
+
 @app.route('/admin', methods=['GET','POST'])
 def admin():
     if not logged_in(): return redirect(url_for('auth'))
@@ -477,6 +564,7 @@ def admin():
                     if status=='approved':
                         con.execute('UPDATE users SET balance=COALESCE(balance,0)+? WHERE id=?',(row['amount'],row['user_id']))
                         con.execute('INSERT INTO wallet_ledger(user_id,entry_type,amount,source,reference) VALUES(?,?,?,?,?)',(row['user_id'],'credit',row['amount'],'deposit_approved',str(rid)))
+                        credit_team_commissions(con,int(rid),row['user_id'],row['amount'])
                     con.execute('UPDATE transactions SET status=? WHERE user_id=? AND kind="Deposit" AND reference=?',(status,row['user_id'],f'DEP-{rid}'))
                     process_vip_rewards(con,row['user_id'])
             elif action in ('approve_withdrawal','reject_withdrawal'):
@@ -507,5 +595,85 @@ def pimco_legacy_invite():
     code = request.args.get("code", "").strip()
     return redirect(url_for("auth", mode="signup", ref=code))
 
+
+
+@app.route("/settings", methods=["GET", "POST"])
+def settings():
+    if not logged_in():
+        return redirect(url_for("auth"))
+    message = None
+    if request.method == "POST":
+        current_password = request.form.get("current_password", "")
+        new_password = request.form.get("new_password", "")
+        confirm_password = request.form.get("confirm_password", "")
+        with db() as con:
+            user = con.execute(
+                "SELECT password_hash FROM users WHERE id=?",
+                (session["user_id"],)
+            ).fetchone()
+            if not user or not check_password_hash(user["password_hash"], current_password):
+                message = ("error", "Your current password is incorrect.")
+            elif len(new_password) < 8:
+                message = ("error", "New password must contain at least 8 characters.")
+            elif new_password != confirm_password:
+                message = ("error", "The new passwords do not match.")
+            elif check_password_hash(user["password_hash"], new_password):
+                message = ("error", "Choose a password different from your current password.")
+            else:
+                con.execute(
+                    "UPDATE users SET password_hash=? WHERE id=?",
+                    (generate_password_hash(new_password), session["user_id"])
+                )
+                message = ("success", "Password changed successfully.")
+    return render_template("settings.html", active="my", message=message)
+
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)
+
+
+@app.route("/admin/members/<int:member_id>", methods=["GET", "POST"])
+def admin_member(member_id):
+    if not logged_in() or not is_admin():
+        return redirect(url_for("auth"))
+    with db() as con:
+        if request.method == "POST":
+            action=request.form.get("action","")
+            if action in ("block","unblock"):
+                if action=="unblock" or member_id != session.get("user_id"):
+                    con.execute("UPDATE users SET is_blocked=? WHERE id=?", (1 if action=="block" else 0,member_id))
+            elif action in ("add_balance","subtract_balance","set_balance"):
+                try:
+                    amount=float(request.form.get("amount",""))
+                    if amount < 0: raise ValueError()
+                    row=con.execute("SELECT balance FROM users WHERE id=?",(member_id,)).fetchone()
+                    if row:
+                        old=float(row["balance"] or 0)
+                        new=amount if action=="set_balance" else old+amount if action=="add_balance" else old-amount
+                        if new < 0: raise ValueError()
+                        delta=new-old
+                        con.execute("UPDATE users SET balance=? WHERE id=?",(new,member_id))
+                        if delta:
+                            con.execute("INSERT INTO wallet_ledger(user_id,entry_type,amount,source,reference) VALUES(?,?,?,?,?)",
+                                (member_id,"admin_adjustment",delta,"admin_panel","Admin balance adjustment"))
+                            con.execute("INSERT INTO transactions(user_id,kind,amount,status,reference) VALUES(?,?,?,?,?)",
+                                (member_id,"admin_adjustment",delta,"approved","Admin balance adjustment"))
+                except (ValueError,TypeError):
+                    flash("Invalid amount or insufficient balance.", "error")
+            elif action=="reset_password":
+                password=request.form.get("new_password","")
+                if len(password)>=8:
+                    con.execute("UPDATE users SET password_hash=? WHERE id=?",
+                        (generate_password_hash(password),member_id))
+                else:
+                    flash("Password must contain at least 8 characters.", "error")
+            return redirect(url_for("admin_member",member_id=member_id))
+        member=con.execute("SELECT id,phone,username,email,balance,wallet_balance,referral_code,referred_by,is_blocked FROM users WHERE id=?",(member_id,)).fetchone()
+        if not member: return "Member not found",404
+        team1=con.execute("SELECT id,phone,username,balance FROM users WHERE referred_by=? ORDER BY id DESC",(member_id,)).fetchall()
+        team2=[]
+        for p in team1:
+            team2.extend(con.execute("SELECT id,phone,username,balance FROM users WHERE referred_by=? ORDER BY id DESC",(p["id"],)).fetchall())
+        team3=[]
+        for p in team2:
+            team3.extend(con.execute("SELECT id,phone,username,balance FROM users WHERE referred_by=? ORDER BY id DESC",(p["id"],)).fetchall())
+    return render_template("admin_member.html",member=member,team1=team1,team2=team2,team3=team3)

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+/* PIMCO wallet screenshot layout - isolated from global theme rules */
+#pimco-wallet-page, #pimco-wallet-page * { box-sizing: border-box; }
+#pimco-wallet-page {
+  display:block !important; position:relative; width:100% !important;
+  max-width:100% !important; min-width:0 !important; margin:0 auto !important;
+  padding:clamp(14px,3vw,30px) !important; overflow:hidden;
+  color:#f5f5fb; background:linear-gradient(145deg,#202044,#17172f 65%,#242448);
+  border-radius:18px; font-family:Arial,Helvetica,sans-serif;
+}
+#pimco-wallet-page .pimco-wallet-card {
+  display:block !important; width:100% !important; max-width:900px !important;
+  min-width:0 !important; margin:0 auto !important; padding:clamp(18px,4vw,42px);
+  background:rgba(18,19,43,.55); border:1px solid rgba(255,255,255,.035);
+  border-radius:22px; box-shadow:0 12px 32px rgba(0,0,0,.14);
+}
+#pimco-wallet-page h2 {
+  display:block; width:100%; margin:0 0 18px; color:#ffc229;
+  text-align:center; font-size:clamp(22px,4.5vw,34px); line-height:1.25;
+  font-weight:800;
+}
+#pimco-wallet-page .pimco-wallet-desc {
+  margin:0 auto 24px; max-width:780px; color:#d2d3e2;
+  text-align:center; font-size:clamp(15px,3.2vw,21px); line-height:1.55;
+}
+#pimco-wallet-page .pimco-wallet-balance {
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  width:100%; margin:20px 0 30px; padding:clamp(14px,3vw,24px);
+  background:#343650; border-radius:16px; font-size:clamp(15px,3.5vw,22px);
+  font-weight:700;
+}
+#pimco-wallet-page .pimco-wallet-balance strong { color:#ffc229; white-space:nowrap; }
+#pimco-wallet-page label {
+  display:block; margin:22px 0 10px; color:#fff;
+  font-size:clamp(16px,3.5vw,22px); font-weight:750;
+}
+#pimco-wallet-page .pimco-wallet-input {
+  display:flex; align-items:stretch; width:100%; min-height:62px;
+  overflow:hidden; background:#373951; border-radius:13px;
+}
+#pimco-wallet-page .pimco-wallet-prefix {
+  display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+  min-width:90px; padding:0 16px; color:#ffc229; background:#45475f;
+  font-size:clamp(17px,3.5vw,23px); font-weight:800;
+}
+#pimco-wallet-page input {
+  display:block; flex:1 1 auto; width:100%; min-width:0; height:auto;
+  padding:16px 20px; border:0 !important; outline:none;
+  background:transparent !important; color:#fff !important;
+  font-size:clamp(17px,3.5vw,23px) !important;
+}
+#pimco-wallet-page input::placeholder { color:#b8bacb; opacity:1; }
+#pimco-wallet-page .pimco-wallet-hint {
+  margin:10px 0 22px; color:#bfc1d2;
+  font-size:clamp(14px,3vw,19px); line-height:1.5;
+}
+#pimco-wallet-page .pimco-wallet-note {
+  margin:12px 0 20px; color:#d0d1e0;
+  font-size:clamp(14px,3vw,18px); line-height:1.55;
+}
+#pimco-wallet-page button {
+  display:block !important; width:100% !important; min-height:68px;
+  margin:28px 0 12px; padding:16px 20px; border:0 !important;
+  border-radius:13px; background:#ffbd16 !important; color:#17172b !important;
+  font-size:clamp(17px,3.8vw,24px) !important; font-weight:800 !important;
+  cursor:pointer;
+}
+#pimco-wallet-page .pimco-wallet-footer {
+  margin:20px 0 0; color:#bfc1d2; text-align:center;
+  font-size:clamp(14px,3vw,18px);
+}
+#pimco-wallet-page .pimco-wallet-error {
+  padding:12px; margin:12px 0; border-radius:10px;
+  color:#ff8585; background:#4a1d2a; border:1px solid #e45b70;
+}
+@media(max-width:420px) {
+  #pimco-wallet-page { padding:10px !important; border-radius:12px; }
+  #pimco-wallet-page .pimco-wallet-card { padding:16px 13px; }
+  #pimco-wallet-page .pimco-wallet-balance { align-items:flex-start; flex-direction:column; }
+  #pimco-wallet-page .pimco-wallet-prefix { min-width:72px; padding:0 10px; }
+}
+</style>
+<section id="pimco-wallet-page">
+ <div class="pimco-wallet-card">
+  <h2>WITHDRAWAL FUNDS</h2>
+  <p class="pimco-wallet-desc">Request a withdrawal of your available funds directly to your registered Mobile Money account.</p>
+  <div class="pimco-wallet-balance"><span>▰ Available Balance</span><strong>UGX {{ "{:,.0f}".format(balance|default(0)) }}</strong></div>
+  <form method="POST" action="{{ url_for('withdraw') }}">
+   <label for="pimco-withdraw-amount">Withdrawal Amount</label>
+   <div class="pimco-wallet-input"><span class="pimco-wallet-prefix">UGX</span><input id="pimco-withdraw-amount" name="amount" type="number" min="3000" step="100" placeholder="e.g. 5000" required></div>
+   <p class="pimco-wallet-hint">Minimum withdrawal: <strong>UGX 3,000</strong></p>
+   <label for="pimco-withdraw-phone">Registered Mobile Money Number</label>
+   <div class="pimco-wallet-input"><span class="pimco-wallet-prefix">▯</span><input id="pimco-withdraw-phone" name="phone" type="tel" value="{{ registered_phone|default('') }}" readonly required></div>
+   <p class="pimco-wallet-note">ⓘ &nbsp; Your withdrawal will be sent to this registered Mobile Money number.</p>
+   <p class="pimco-wallet-hint">Withdrawal fee: 10%. You receive 90% of the requested amount.</p>
+   <button type="submit">▣ &nbsp; Continue to Withdrawal &nbsp; →</button>
+  </form>
+ </div>
+</section>
+{% endblock %}

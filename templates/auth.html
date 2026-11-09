@@ -1,42 +1,52 @@
 {% extends "base.html" %}
 {% block content %}
 <style>
-.auth-stage{min-height:76vh;display:flex;align-items:center;justify-content:center;padding:20px 12px}
-.auth-content{width:100%;max-width:350px;margin:auto}
-.auth-brand-word{text-align:center;font-size:25px;font-weight:900;color:#20c5e8;margin-bottom:6px}
-.auth-welcome{text-align:center;font-size:22px;margin:0 0 15px}
-.wave-auth-form{box-sizing:border-box;padding:17px 14px;border-radius:16px;background:rgba(7,30,65,.95);border:1px solid rgba(65,190,230,.4);box-shadow:0 10px 30px #0003;display:flex;flex-direction:column;gap:10px}
-.wave-field{min-height:44px;display:flex;align-items:center;padding:0 11px;border-radius:10px;background:#ffffff18;border:1px solid #ffffff26}
-.wave-field input{width:100%;min-width:0;height:42px;border:0;outline:0;background:transparent;color:white;font-size:14px}
-.wave-field input::placeholder{color:#ffffffb8}
-.wave-submit{height:44px;border:0;border-radius:10px;background:linear-gradient(110deg,#0879c9,#20c5e8);color:white;font-weight:800;font-size:15px}
-.wave-auth-switch{text-align:center;font-size:13px;padding-top:3px}
-.wave-auth-switch a{color:#75def4;text-decoration:none;font-weight:700}
+.auth-stage{box-sizing:border-box;position:relative;isolation:isolate;overflow:hidden;width:100%;min-height:calc(100svh - 24px);display:flex;align-items:center;justify-content:center;padding:14px 12px 20px;color:#f7f3e9;background:radial-gradient(ellipse at 75% 40%,rgba(190,151,75,.13),transparent 36%),linear-gradient(145deg,#171613 0%,#29251e 48%,#11100e 100%)}
+.auth-stage:before{content:"";position:absolute;inset:0;z-index:-1;opacity:.35;background:repeating-linear-gradient(0deg,transparent 0 34px,rgba(220,190,130,.10) 35px 36px,transparent 37px 54px)}
+.auth-content{box-sizing:border-box;width:100%;max-width:340px;margin:auto}
+.auth-brand{display:flex;flex-direction:column;align-items:center;text-align:center;margin:0 0 16px}
+.auth-logo{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:#eee5d2;border:4px solid #c5a568;box-shadow:0 3px 14px #0006;margin-bottom:9px}
+.auth-logo span{font-family:Georgia,serif;font-size:43px;line-height:1;font-weight:900;color:#302719}
+.auth-brand-name{font-family:Georgia,serif;font-size:28px;letter-spacing:3px;font-weight:700;line-height:1.1;color:#f7f0df}
+.auth-brand-sub{font-size:10px;letter-spacing:5px;color:#d2b777;font-weight:700;margin-top:5px}
+.auth-mode-title{text-align:center;font-size:13px;letter-spacing:5px;font-weight:700;color:#e6d6b5;margin:14px 0 15px}
+.wave-auth-form{box-sizing:border-box;width:100%;display:flex;flex-direction:column;gap:9px}
+.wave-field{box-sizing:border-box;width:100%;height:49px;min-height:49px;display:flex;align-items:center;padding:0 13px;border-radius:28px;background:rgba(255,255,255,.075);border:1px solid rgba(219,196,153,.38)}
+.wave-field .auth-symbol{width:26px;flex:0 0 26px;color:#d4b777;font-size:17px;text-align:left}
+.wave-field input{box-sizing:border-box;width:100%;min-width:0;height:46px;border:0;outline:0;background:transparent;color:#fff8e9;font-size:13px;padding:0 6px}
+.wave-field input::placeholder{color:rgba(245,238,222,.68);opacity:1}
+.wave-submit{width:100%;height:48px;min-height:48px;border:0;border-radius:28px;background:linear-gradient(110deg,#a98543,#d8bd80);color:#211b11;font-weight:800;font-size:14px;box-shadow:0 5px 14px rgba(0,0,0,.22);margin-top:3px}
+.wave-auth-switch{text-align:center;font-size:12px;line-height:1.4;padding-top:15px;color:rgba(255,255,255,.78)}
+.wave-auth-switch a{color:#e2c47b;text-decoration:underline;text-underline-offset:3px;font-weight:800}
+.auth-footer{text-align:center;color:#bdb29b;font-size:9px;letter-spacing:1px;margin-top:14px;opacity:.8}
 </style>
 <section class="auth-stage"><div class="auth-content">
-<div class="auth-brand-word">PIMCO AI</div><h1 class="auth-welcome">Welcome</h1>
-{% if mode == 'signup' %}
-<form method="post" class="wave-auth-form" autocomplete="on">
-<input type="hidden" name="mode" value="signup">
-<label class="wave-field"><input name="phone" type="tel" placeholder="Phone number" required autocomplete="tel"></label>
-<label class="wave-field"><input id="signup-password" name="password" type="password" placeholder="Create password" minlength="8" required autocomplete="new-password"></label>
-<label class="wave-field"><input id="confirm-password" name="confirm_password" type="password" placeholder="Confirm password" minlength="8" required autocomplete="new-password"></label>
-<label class="wave-field"><input name="invite_code" value="{{ invite_code|default('') }}" placeholder="Invitation code (optional)"></label>
-<button class="wave-submit" type="submit">Register</button>
-<div class="wave-auth-switch"><a href="{{ url_for('auth', mode='signin') }}">Already registered? Login</a></div>
-</form>
-{% else %}
-<form method="post" class="wave-auth-form" autocomplete="on">
-<input type="hidden" name="mode" value="signin">
-<label class="wave-field"><input name="identity" type="tel" placeholder="Phone number" required autocomplete="username"></label>
-<label class="wave-field"><input name="password" type="password" placeholder="Password" required autocomplete="current-password"></label>
-<button class="wave-submit" type="submit">Login</button>
-<div class="wave-auth-switch"><a href="{{ url_for('auth', mode='signup') }}">Create an account</a></div>
-</form>
-{% endif %}
+  <div class="auth-brand"><div class="auth-logo"><span>P</span></div><div class="auth-brand-name">PIMCO</div><div class="auth-brand-sub">INVESTMENT</div></div>
+  {% if mode == 'signup' %}
+    <h1 class="auth-mode-title">SIGN UP</h1>
+    <form method="post" class="wave-auth-form" autocomplete="on">
+      <input type="hidden" name="mode" value="signup">
+      <label class="wave-field"><span class="auth-symbol">♙</span><input name="phone" type="tel" placeholder="Phone number" required autocomplete="tel"></label>
+      <label class="wave-field"><span class="auth-symbol">♙</span><input id="signup-password" name="password" type="password" placeholder="Create password" minlength="8" required autocomplete="new-password"></label>
+      <label class="wave-field"><span class="auth-symbol">♙</span><input id="confirm-password" name="confirm_password" type="password" placeholder="Confirm password" minlength="8" required autocomplete="new-password"></label>
+      <label class="wave-field"><span class="auth-symbol">♧</span><input name="invite_code" value="{{ invite_code|default('') }}" placeholder="Invitation code (optional)"></label>
+      <button class="wave-submit" type="submit">＋ &nbsp; Sign up</button>
+      <div class="wave-auth-switch">Already have an account? <a href="{{ url_for('auth', mode='signin') }}">Sign in</a></div>
+    </form>
+  {% else %}
+    <h1 class="auth-mode-title">SIGN IN</h1>
+    <form method="post" class="wave-auth-form" autocomplete="on">
+      <input type="hidden" name="mode" value="signin">
+      <label class="wave-field"><span class="auth-symbol">♙</span><input name="identity" type="tel" placeholder="Phone number" required autocomplete="username"></label>
+      <label class="wave-field"><span class="auth-symbol">♙</span><input name="password" type="password" placeholder="Password" required autocomplete="current-password"></label>
+      <button class="wave-submit" type="submit">↪ &nbsp; Sign in</button>
+      <div class="wave-auth-switch">Don't have an account yet? <a href="{{ url_for('auth', mode='signup') }}">Sign up</a></div>
+    </form>
+  {% endif %}
+  <div class="auth-footer">PIMCO INVESTMENT</div>
 </div></section>
 <script>
-const f=document.querySelector('form input[name="mode"][value="signup"]')?.form;
-if(f)f.addEventListener('submit',e=>{const a=document.getElementById('signup-password'),b=document.getElementById('confirm-password');if(a.value!==b.value){e.preventDefault();b.setCustomValidity('Passwords do not match.');b.reportValidity();}else b.setCustomValidity('');});
+const signupForm=document.querySelector('form input[name="mode"][value="signup"]')?.form;
+if(signupForm)signupForm.addEventListener('submit',e=>{const a=document.getElementById('signup-password'),b=document.getElementById('confirm-password');if(a.value!==b.value){e.preventDefault();b.setCustomValidity('Passwords do not match.');b.reportValidity();}else b.setCustomValidity('');});
 </script>
 {% endblock %}

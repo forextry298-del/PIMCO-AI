@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+/* Compact wallet layout: scoped so the site's global grid/flex rules cannot split it into columns. */
+#pimco-wallet {
+  display:block !important; position:relative; isolation:isolate;
+  float:none !important; clear:both !important;
+  width:100% !important; max-width:100% !important; min-width:0 !important;
+  grid-column:1 / -1 !important; flex:0 0 100% !important;
+  margin:0 auto !important; padding:12px 0 24px !important;
+  overflow:hidden; color:#f5f5fb; font-family:Arial,Helvetica,sans-serif;
+}
+#pimco-wallet:before,#pimco-wallet:after {
+  content:""; position:absolute; z-index:-1; left:-15%; width:130%; height:100px;
+  border-radius:50%; bottom:-72px; pointer-events:none;
+  background:rgba(0,185,220,.10); animation:pimcoWave 14s ease-in-out infinite;
+}
+#pimco-wallet:after { bottom:-84px; background:rgba(50,100,220,.10); animation-duration:19s; }
+@keyframes pimcoWave { 0%,100%{transform:translateX(-2%)} 50%{transform:translateX(2%)} }
+#pimco-wallet .pw-card {
+  display:block !important; float:none !important; width:calc(100% - 28px) !important;
+  max-width:510px !important; min-width:0 !important; margin:4px auto 18px !important;
+  padding:20px 18px !important; box-sizing:border-box !important;
+  border-radius:17px; background:#1c1c38 !important;
+  border:1px solid rgba(255,195,41,.10); box-shadow:0 8px 25px rgba(0,0,0,.20);
+}
+#pimco-wallet .pw-card * { box-sizing:border-box !important; }
+#pimco-wallet .pw-title {
+  display:block !important; width:100% !important; margin:0 0 8px !important;
+  color:#ffc329 !important; text-align:center !important;
+  font-size:21px !important; line-height:1.25 !important; font-weight:800 !important;
+}
+#pimco-wallet .pw-desc {
+  display:block !important; width:100% !important; margin:0 0 18px !important;
+  color:#c2c2d3 !important; text-align:center !important;
+  font-size:14px !important; line-height:1.45 !important;
+}
+#pimco-wallet .pw-balance {
+  display:flex !important; align-items:center !important; justify-content:space-between !important;
+  gap:8px; width:100% !important; min-width:0 !important;
+  margin:0 0 22px !important; padding:13px 14px !important;
+  border-radius:11px; background:#34354f !important; color:#fff !important;
+  font-size:15px !important; font-weight:700 !important;
+}
+#pimco-wallet .pw-balance strong { color:#ffc329 !important; font-size:17px !important; white-space:nowrap; }
+#pimco-wallet .pw-field { display:block !important; width:100% !important; margin:0 0 17px !important; }
+#pimco-wallet .pw-label {
+  display:block !important; width:100% !important; margin:0 0 8px !important;
+  color:#fff !important; font-size:15px !important; line-height:1.3 !important; font-weight:700 !important;
+}
+#pimco-wallet .pw-inputrow {
+  display:flex !important; align-items:center !important; width:100% !important;
+  min-width:0 !important; height:50px !important; overflow:hidden;
+  border-radius:9px; background:#373951 !important;
+}
+#pimco-wallet .pw-prefix {
+  display:flex !important; align-items:center !important; justify-content:center !important;
+  flex:0 0 70px !important; height:50px !important; background:#ffc329 !important;
+  color:#252238 !important; font-size:16px !important; font-weight:800 !important;
+}
+#pimco-wallet input,#pimco-wallet select {
+  display:block !important; float:none !important; width:100% !important;
+  min-width:0 !important; max-width:100% !important; height:50px !important;
+  margin:0 !important; padding:0 13px !important; border:0 !important;
+  border-radius:0 !important; outline:none !important; box-shadow:none !important;
+  background:#373951 !important; color:#fff !important; font-size:15px !important;
+}
+#pimco-wallet input::placeholder { color:#aeb0c2 !important; opacity:1; }
+#pimco-wallet .pw-hint {
+  display:block !important; margin:7px 0 0 !important; color:#b9b9cb !important;
+  font-size:13px !important; line-height:1.4 !important;
+}
+#pimco-wallet .pw-select { margin-top:9px !important; }
+#pimco-wallet .pw-select select {
+  border-radius:9px !important; border:1px solid #51536d !important;
+}
+#pimco-wallet .pw-button {
+  display:flex !important; align-items:center !important; justify-content:center !important;
+  width:100% !important; min-height:54px !important; margin:4px 0 14px !important;
+  padding:12px !important; border:0 !important; border-radius:9px !important;
+  background:#ffbd16 !important; color:#211a22 !important;
+  font-size:17px !important; font-weight:800 !important; cursor:pointer !important;
+  text-align:center !important; box-shadow:none !important;
+}
+#pimco-wallet .pw-foot {
+  margin:0 !important; color:#b8b8ca !important; text-align:center !important;
+  font-size:13px !important; line-height:1.4 !important;
+}
+#pimco-wallet .flash.error,#pimco-wallet .flash-message.error,#pimco-wallet .alert.error {
+  color:#ff8997 !important; background:#451e30 !important; border:1px solid #d95770 !important;
+}
+@media(max-width:360px) {
+  #pimco-wallet .pw-card { width:calc(100% - 20px) !important; padding:17px 14px !important; }
+  #pimco-wallet .pw-title { font-size:19px !important; }
+  #pimco-wallet .pw-prefix { flex-basis:62px !important; }
+}
+</style>
+
+<section id="pimco-wallet">
+ <div class="pw-card">
+  <h2 class="pw-title">＋ RECHARGE YOUR WALLET</h2>
+  <p class="pw-desc">Pay via Mobile Money. Deposits are credited after payment is verified.</p>
+  <div class="pw-balance"><span>▰ Recharge Balance</span><strong>UGX {{ "{:,.0f}".format(balance|default(0)) }}</strong></div>
+  <form method="post" action="{{ url_for('deposit') }}">
+   <div class="pw-field">
+    <label class="pw-label" for="pw-deposit-amount">Recharge Amount</label>
+    <div class="pw-inputrow"><span class="pw-prefix">UGX</span><input id="pw-deposit-amount" name="amount" type="number" min="30000" step="1000" placeholder="Enter recharge amount" required></div>
+    <p class="pw-hint">Minimum recharge: UGX 30,000</p>
+   </div>
+   <div class="pw-field">
+    <label class="pw-label" for="pw-deposit-phone">Mobile Money Payment Number</label>
+    <div class="pw-inputrow"><span class="pw-prefix">☎</span><input id="pw-deposit-phone" name="phone" type="tel" placeholder="e.g. 0772123456" required></div>
+    <div class="pw-select">
+     <label class="pw-label" for="pw-deposit-network" style="margin-top:10px!important">Mobile Money Network</label>
+     <select id="pw-deposit-network" name="network" required><option value="">Choose network</option><option value="MTN">MTN Mobile Money</option><option value="Airtel">Airtel Money</option></select>
+    </div>
+   </div>
+   <input type="hidden" name="method" value="mobile_money">
+   <button class="pw-button" type="submit">▣ &nbsp; Proceed to Recharge →</button>
+  </form>
+  <p class="pw-foot">♙ Secure Mobile Money Payment</p>
+ </div>
+</section>
+{% endblock %}

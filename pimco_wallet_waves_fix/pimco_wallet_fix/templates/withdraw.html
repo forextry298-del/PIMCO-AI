@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.wallet-wave-page{position:relative;isolation:isolate;overflow:hidden;min-height:78vh;padding:22px 14px;color:#f7f7ff;background:linear-gradient(145deg,#080d27,#17113b 58%,#071b35);border-radius:18px}
+.wallet-wave-page:before,.wallet-wave-page:after{content:"";position:absolute;z-index:-1;left:-15%;width:130%;height:190px;border-radius:45%;background:rgba(24,190,220,.16);animation:walletWave 11s linear infinite}
+.wallet-wave-page:before{bottom:-105px;transform:rotate(-5deg)}
+.wallet-wave-page:after{bottom:-125px;background:rgba(44,105,220,.2);animation-duration:16s;animation-direction:reverse}
+@keyframes walletWave{0%{transform:translateX(-4%) rotate(0deg)}50%{transform:translateX(4%) rotate(7deg)}100%{transform:translateX(-4%) rotate(0deg)}}
+.wallet-card{position:relative;max-width:520px;margin:12px auto;padding:22px;background:rgba(7,12,35,.9);border:1px solid rgba(245,190,55,.45);border-radius:16px;box-shadow:0 12px 35px #0005}
+.wallet-card h2{color:#f4c64e;text-align:center;margin:0 0 18px;font-size:22px}
+.wallet-card label{display:block;margin:13px 0 6px;color:#f1d98a;font-weight:600}
+.wallet-card input,.wallet-card select{width:100%;box-sizing:border-box;padding:13px;border:1px solid #59617d;border-radius:9px;background:#111a38;color:white;font-size:16px}
+.wallet-card button{width:100%;margin-top:18px;padding:14px;border:0;border-radius:10px;background:linear-gradient(90deg,#e8b637,#ffdb70);color:#171326;font-weight:800;font-size:16px;cursor:pointer}
+.wallet-balance{padding:12px;text-align:center;border-radius:10px;background:#ffffff12;color:#fff}
+.wallet-help{font-size:13px;color:#c7cbe0;margin-top:10px;line-height:1.5}
+.wallet-error,.flash.error,.flash-message.error,.alert.error{color:#ff7777!important;background:#401a2a!important;border:1px solid #e34b69!important;padding:10px;border-radius:8px}
+.wallet-links{display:flex;justify-content:space-between;gap:12px;margin-top:16px;flex-wrap:wrap}
+.wallet-links a{color:#f4cf68;text-decoration:none}
+</style>
+
+<section class="wallet-wave-page"><div class="wallet-card">
+<h2>WITHDRAWAL FUNDS</h2>
+<div class="wallet-balance">Available Balance: <strong>UGX {{ "{:,.0f}".format(balance|default(0)) }}</strong></div>
+<form method="POST" action="{{ url_for('withdraw') }}">
+<label for="withdraw-amount">Withdrawal Amount (UGX)</label>
+<input id="withdraw-amount" type="number" name="amount" min="3000" step="100" required placeholder="Minimum UGX 3,000">
+<label for="withdraw-network">Mobile Money Network</label>
+<select id="withdraw-network" name="network" required><option value="">Choose MTN or Airtel</option><option value="MTN">MTN</option><option value="Airtel">Airtel</option></select>
+<label for="withdraw-phone">Registered Mobile Money Number</label>
+<input id="withdraw-phone" type="tel" name="phone" value="{{ registered_phone|default('') }}" required placeholder="07XXXXXXXX">
+<button type="submit">Continue to Withdrawal</button>
+</form>
+<p class="wallet-help">Minimum withdrawal UGX 3,000. A 10% fee applies; 90% is the payout. Requests appear in Bills as pending. Rejected requests are refunded.</p>
+<div class="wallet-links"><a href="{{ url_for('deposit') }}">Recharge wallet</a><a href="{{ url_for('bill') }}">Bills / transactions</a></div>
+</div></section>
+{% endblock %}

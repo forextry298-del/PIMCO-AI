@@ -1,6 +1,1 @@
-PIMCO AI compact registration/login update
-
-Extract this ZIP into your PIMCO_AI project folder, then run:
-python install_auth_update.py
-
-Run from the project root containing app.py. The installer backs up app.py and templates/auth.html. It does not delete your database.
+PIMCO AI HOME PAGE ADMIN SHORTCUT\n\nExtract this ZIP inside ~/storage/downloads/PIMCO_AI, then run:\npython pimco_home_admin_shortcut/install_home_admin_shortcut.py\npython -m py_compile app.py\npython app.py\n\nBackups are created. The shortcut appears only when the logged-in user's registered phone ends in 758878297. It links to the existing /admin route and does not replace admin authorization.\n

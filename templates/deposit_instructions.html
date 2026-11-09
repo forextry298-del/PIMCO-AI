@@ -1,1 +1,29 @@
-{% extends 'base.html' %}{% block content %}<section class="panel"><h2>Send money</h2><p>Send your deposit to:</p><div class="recipient"><h2>{{recipient}}</h2><strong>{{recipient_name}}</strong></div><p>After sending, your deposit request will remain pending until the administrator confirms payment.</p><a class="primary" href="{{url_for('bill')}}">Continue</a></section>{% endblock %}
+{% extends "base.html" %}
+{% block content %}
+<style>
+.deposit-instruction-wrap{width:100%;padding:14px 0 28px;box-sizing:border-box}
+.deposit-instruction-card{width:calc(100% - 28px);max-width:500px;margin:8px auto;padding:22px 18px;box-sizing:border-box;border-radius:17px;background:#1c1c38;color:#f6f6fb;border:1px solid rgba(255,195,41,.16);box-shadow:0 10px 28px rgba(0,0,0,.2);text-align:center}
+.deposit-instruction-card h2{margin:0 0 10px;color:#ffc329;font-size:22px;line-height:1.3}
+.deposit-instruction-card p{color:#c5c5d5;font-size:15px;line-height:1.5;margin:8px 0}
+.deposit-recipient{margin:20px 0;padding:18px 12px;border-radius:12px;background:#34354f}
+.deposit-recipient small{display:block;color:#c5c5d5;font-size:14px;margin-bottom:7px}
+.deposit-recipient strong{display:block;color:#ffc329;font-size:26px;letter-spacing:1px}
+.deposit-recipient b{display:block;color:#fff;font-size:18px;margin-top:8px}
+.deposit-instruction-card .pending-note{font-size:13px;color:#bdbdd0;margin-top:14px}
+.deposit-instruction-card a{display:block;margin-top:18px;padding:13px 14px;border-radius:9px;background:#ffbd16;color:#211a22;text-decoration:none;font-weight:800;font-size:16px}
+</style>
+<section class="deposit-instruction-wrap">
+ <div class="deposit-instruction-card">
+  <h2>COMPLETE YOUR DEPOSIT</h2>
+  <p>Send the exact amount you entered using Mobile Money to the recipient below.</p>
+  <div class="deposit-recipient">
+   <small>Send money to</small>
+   <strong>0731199883</strong>
+   <b>Collins</b>
+  </div>
+  <p>After sending, keep your Mobile Money confirmation message. Your deposit will be checked by an administrator.</p>
+  <p class="pending-note">Your deposit request is pending. Your wallet will only be credited after payment is confirmed.</p>
+  <a href="{{ url_for('bill') }}">Continue</a>
+ </div>
+</section>
+{% endblock %}

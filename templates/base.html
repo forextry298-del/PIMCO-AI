@@ -8,10 +8,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='bill-gold-2') }}">
 </head>
 <body class="{{ 'home-page' if request.endpoint == 'home' else ('my-page' if request.endpoint == 'my' else ('team-page' if request.endpoint == 'team' else ('income-page' if request.endpoint == 'income' else ('bill-page' if request.endpoint == 'bill' else '')))) }}">
-{% if request.endpoint not in ["auth", "home", "team"] %}<header class="topbar">
-<a class="brand" href="{{ url_for('home') }}"><span class="brand-mark">A</span><span class="brand-word">Armazon</span></a>
-{% if session.get('phone') or session.get('email') %}<a class="notification" href="#messages" aria-label="Notifications"><svg viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><i></i></a>{% endif %}
-</header>{% endif %}
+
 <main class="page">{% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category, m in messages %}<div class="notice {% if category == 'error' %}notice-error{% elif category == 'success' %}notice-success{% endif %}">{{m}}</div>{% endfor %}{% endif %}{% endwith %}{% block content %}{% endblock %}</main>
 {% if session.get('user_id') %}
 <a class="floating-support" href="{{ url_for('home') }}#messages" aria-label="Open customer support">

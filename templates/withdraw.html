@@ -1,50 +1,134 @@
-{% extends 'base.html' %}
+
+<style>
+.pw-title{display:flex;align-items:center;gap:10px}
+.pw-title-icon{width:27px;height:27px;flex:0 0 27px;color:#ffc329;
+  padding:5px;border-radius:9px;background:rgba(255,195,41,.13);box-sizing:border-box}
+.pw-prefix-icon{width:19px;height:19px;display:block}
+.pw-inputrow .pw-prefix{display:flex;align-items:center;justify-content:center}
+</style>
+
+{% extends "base.html" %}
 {% block content %}
-<section class="withdraw-page">
-  <header class="withdraw-head">
-    <a href="{{ url_for('my') }}" aria-label="Back">‹</a>
-    <div><small>ACCOUNT SERVICES</small><h1>Withdrawal</h1></div>
-  </header>
-  <div class="withdraw-balance">
-    <span>AVAILABLE BALANCE</span>
-    <strong>UGX {{ '{:,.0f}'.format(balance) }}</strong>
-  </div>
-  <form method="post" class="withdraw-form">
-    <label for="withdraw-phone">Mobile money number</label>
-    <input id="withdraw-phone" name="phone" type="tel" inputmode="tel"
-           value="{{ registered_phone or '' }}" placeholder="07XXXXXXXX" required>
-    <label>Network</label>
-    <div class="withdraw-networks">
-      <label class="withdraw-network"><input type="radio" name="network" value="MTN" required><span class="network-mark mtn-mark">M</span><b>MTN</b></label>
-      <label class="withdraw-network"><input type="radio" name="network" value="Airtel" required><span class="network-mark airtel-mark">A</span><b>Airtel</b></label>
+
+<style>
+/* Compact wallet layout: scoped so the site's global grid/flex rules cannot split it into columns. */
+#pimco-wallet {
+  display:block !important; position:relative; isolation:isolate;
+  float:none !important; clear:both !important;
+  width:100% !important; max-width:100% !important; min-width:0 !important;
+  grid-column:1 / -1 !important; flex:0 0 100% !important;
+  margin:0 auto !important; padding:12px 0 24px !important;
+  overflow:hidden; color:#f5f5fb; font-family:Arial,Helvetica,sans-serif;
+}
+#pimco-wallet:before,#pimco-wallet:after {
+  content:""; position:absolute; z-index:-1; left:-15%; width:130%; height:100px;
+  border-radius:50%; bottom:-72px; pointer-events:none;
+  background:rgba(0,185,220,.10); animation:pimcoWave 14s ease-in-out infinite;
+}
+#pimco-wallet:after { bottom:-84px; background:rgba(50,100,220,.10); animation-duration:19s; }
+@keyframes pimcoWave { 0%,100%{transform:translateX(-2%)} 50%{transform:translateX(2%)} }
+#pimco-wallet .pw-card {
+  display:block !important; float:none !important; width:calc(100% - 28px) !important;
+  max-width:510px !important; min-width:0 !important; margin:4px auto 18px !important;
+  padding:20px 18px !important; box-sizing:border-box !important;
+  border-radius:17px; background:#1c1c38 !important;
+  border:1px solid rgba(255,195,41,.10); box-shadow:0 8px 25px rgba(0,0,0,.20);
+}
+#pimco-wallet .pw-card * { box-sizing:border-box !important; }
+#pimco-wallet .pw-title {
+  display:block !important; width:100% !important; margin:0 0 8px !important;
+  color:#ffc329 !important; text-align:center !important;
+  font-size:21px !important; line-height:1.25 !important; font-weight:800 !important;
+}
+#pimco-wallet .pw-desc {
+  display:block !important; width:100% !important; margin:0 0 18px !important;
+  color:#c2c2d3 !important; text-align:center !important;
+  font-size:14px !important; line-height:1.45 !important;
+}
+#pimco-wallet .pw-balance {
+  display:flex !important; align-items:center !important; justify-content:space-between !important;
+  gap:8px; width:100% !important; min-width:0 !important;
+  margin:0 0 22px !important; padding:13px 14px !important;
+  border-radius:11px; background:#34354f !important; color:#fff !important;
+  font-size:15px !important; font-weight:700 !important;
+}
+#pimco-wallet .pw-balance strong { color:#ffc329 !important; font-size:17px !important; white-space:nowrap; }
+#pimco-wallet .pw-field { display:block !important; width:100% !important; margin:0 0 17px !important; }
+#pimco-wallet .pw-label {
+  display:block !important; width:100% !important; margin:0 0 8px !important;
+  color:#fff !important; font-size:15px !important; line-height:1.3 !important; font-weight:700 !important;
+}
+#pimco-wallet .pw-inputrow {
+  display:flex !important; align-items:center !important; width:100% !important;
+  min-width:0 !important; height:50px !important; overflow:hidden;
+  border-radius:9px; background:#373951 !important;
+}
+#pimco-wallet .pw-prefix {
+  display:flex !important; align-items:center !important; justify-content:center !important;
+  flex:0 0 70px !important; height:50px !important; background:#ffc329 !important;
+  color:#252238 !important; font-size:16px !important; font-weight:800 !important;
+}
+#pimco-wallet input,#pimco-wallet select {
+  display:block !important; float:none !important; width:100% !important;
+  min-width:0 !important; max-width:100% !important; height:50px !important;
+  margin:0 !important; padding:0 13px !important; border:0 !important;
+  border-radius:0 !important; outline:none !important; box-shadow:none !important;
+  background:#373951 !important; color:#fff !important; font-size:15px !important;
+}
+#pimco-wallet input::placeholder { color:#aeb0c2 !important; opacity:1; }
+#pimco-wallet .pw-hint {
+  display:block !important; margin:7px 0 0 !important; color:#b9b9cb !important;
+  font-size:13px !important; line-height:1.4 !important;
+}
+#pimco-wallet .pw-select { margin-top:9px !important; }
+#pimco-wallet .pw-select select {
+  border-radius:9px !important; border:1px solid #51536d !important;
+}
+#pimco-wallet .pw-button {
+  display:flex !important; align-items:center !important; justify-content:center !important;
+  width:100% !important; min-height:54px !important; margin:4px 0 14px !important;
+  padding:12px !important; border:0 !important; border-radius:9px !important;
+  background:#ffbd16 !important; color:#211a22 !important;
+  font-size:17px !important; font-weight:800 !important; cursor:pointer !important;
+  text-align:center !important; box-shadow:none !important;
+}
+#pimco-wallet .pw-foot {
+  margin:0 !important; color:#b8b8ca !important; text-align:center !important;
+  font-size:13px !important; line-height:1.4 !important;
+}
+#pimco-wallet .flash.error,#pimco-wallet .flash-message.error,#pimco-wallet .alert.error {
+  color:#ff8997 !important; background:#451e30 !important; border:1px solid #d95770 !important;
+}
+@media(max-width:360px) {
+  #pimco-wallet .pw-card { width:calc(100% - 20px) !important; padding:17px 14px !important; }
+  #pimco-wallet .pw-title { font-size:19px !important; }
+  #pimco-wallet .pw-prefix { flex-basis:62px !important; }
+}
+</style>
+
+<section id="pimco-wallet">
+ <div class="pw-card">
+  <h2 class="pw-title"><svg class="pw-title-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9m-5 5 5-5 5 5"/><path d="M4 7V4h16v3"/></svg>WITHDRAWAL FUNDS</h2>
+  <p class="pw-desc">Request a withdrawal of your available funds directly to your registered Mobile Money account.</p>
+  <div class="pw-balance"><span>▰ Available Balance</span><strong>UGX {{ "{:,.0f}".format(balance|default(0)) }}</strong></div>
+  <form method="post" action="{{ url_for('withdraw') }}">
+   <div class="pw-field">
+    <label class="pw-label" for="pw-withdraw-amount">Withdrawal Amount</label>
+    <div class="pw-inputrow"><span class="pw-prefix">UGX</span><input id="pw-withdraw-amount" name="amount" type="number" min="3000" step="100" placeholder="e.g. 5000" required></div>
+    <p class="pw-hint">Minimum withdrawal: UGX 3,000</p>
+   </div>
+   <div class="pw-field">
+    <label class="pw-label" for="pw-withdraw-phone">Registered Mobile Money Number</label>
+    <div class="pw-inputrow"><span class="pw-prefix">▯</span><input id="pw-withdraw-phone" name="phone" type="tel" value="{{ registered_phone|default('') }}" readonly required></div>
+    <p class="pw-hint">ⓘ Your withdrawal will be sent to this registered Mobile Money number.</p>
+    <div class="pw-select">
+     <label class="pw-label" for="pw-withdraw-network" style="margin-top:10px!important">Mobile Money Network</label>
+     <select id="pw-withdraw-network" name="network" required><option value="">Choose network</option><option value="MTN">MTN Mobile Money</option><option value="Airtel">Airtel Money</option></select>
     </div>
-    <label for="withdraw-amount">Withdrawal amount</label>
-    <div class="withdraw-amount"><span>UGX</span><input id="withdraw-amount" name="amount" type="number" min="1" step="1" placeholder="Enter amount" required></div>
-    <div class="withdraw-calculation">
-      <div><span>Withdrawal fee (10%)</span><b id="withdraw-fee">UGX 0</b></div>
-      <div class="withdraw-net"><span>You will receive</span><strong id="withdraw-net">UGX 0</strong></div>
-    </div>
-    <aside class="withdraw-note">
-      <b>Withdrawal information</b>
-      <p>A 10% service fee is deducted. Your payout is 90% of the amount entered.</p>
-      <p>The entered amount is deducted from your available balance when submitted. Your request appears in Bills as Pending until admin review.</p>
-    </aside>
-    <button class="withdraw-submit" type="submit">Confirm withdrawal <span>→</span></button>
+   </div>
+   <button class="pw-button" type="submit">▣ &nbsp; Continue to Withdrawal →</button>
   </form>
+  <p class="pw-foot">A 10% withdrawal fee applies. Requests appear in Bills as pending.</p>
+ </div>
 </section>
-<script>
-(() => {
-  const amount = document.getElementById('withdraw-amount');
-  const fee = document.getElementById('withdraw-fee');
-  const net = document.getElementById('withdraw-net');
-  const fmt = n => 'UGX ' + Math.round(n).toLocaleString('en-US');
-  function update() {
-    const value = Math.max(0, Number(amount.value) || 0);
-    fee.textContent = fmt(value * .10);
-    net.textContent = fmt(value * .90);
-  }
-  amount.addEventListener('input', update);
-  update();
-})();
-</script>
 {% endblock %}
