@@ -1,18 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
 <style>
-.settings-wrap{max-width:420px;margin:14px auto;padding:0 12px}
-.settings-card{background:linear-gradient(145deg,#171b35,#101329);border:1px solid rgba(220,184,91,.25);border-radius:15px;padding:17px;color:#f4f3fa;box-shadow:0 10px 28px rgba(0,0,0,.18)}
-.settings-card h2{font-size:19px;margin:0 0 5px;color:#e8c66d}
-.settings-sub{font-size:12px;color:#aeb2c8;margin:0 0 16px}
-.settings-card label{display:block;font-size:12px;color:#c7c9d8;margin:12px 0 6px}
-.settings-card input{width:100%;box-sizing:border-box;border:1px solid #353a5c;background:#0d1125;color:#fff;border-radius:9px;padding:12px;font-size:14px;outline:none}
-.settings-card input:focus{border-color:#d9b85f}
-.settings-submit{width:100%;border:0;border-radius:9px;background:linear-gradient(90deg,#c49a3a,#f0d27c);color:#171525;font-weight:700;padding:12px;margin-top:16px;font-size:14px}
-.settings-note{font-size:11px;color:#9fa5bd;margin:12px 0 0}
-.settings-message{padding:9px 11px;border-radius:8px;font-size:12px;margin:0 0 12px}
+.settings-wrap{max-width:520px;margin:12px auto;padding:0 10px;color:#f5f5f5}
+.settings-card,.investment-card{background:#151515;border:1px solid #b8953b;border-radius:12px;padding:14px;margin-bottom:13px}
+.settings-card h2,.investment-card h3{color:#e8c66d;margin:0 0 5px;font-size:17px}
+.settings-sub{font-size:11px;color:#aaa;margin:0 0 12px}
+.settings-card label{display:block;font-size:12px;color:#ddd;margin:10px 0 5px}
+.settings-card input{width:100%;box-sizing:border-box;border:1px solid #555;background:#090909;color:white;border-radius:7px;padding:10px;font-size:13px}
+.settings-submit{width:100%;border:0;border-radius:7px;background:linear-gradient(90deg,#b58a2b,#f0d27c);color:#17120a;font-weight:bold;padding:11px;margin-top:13px}
+.settings-note{font-size:10px;color:#aaa;margin:10px 0 0}
+.settings-message{padding:8px;border-radius:7px;font-size:12px;margin-bottom:10px}
 .settings-error{background:#49232d;color:#ffd9df}.settings-success{background:#183c32;color:#c8ffdf}
+.machine-table-wrap{overflow-x:auto}
+.machine-table{width:100%;border-collapse:collapse;min-width:390px;font-size:11px}
+.machine-table th{background:#292316;color:#e8c66d;text-align:left;padding:9px 6px}
+.machine-table td{padding:8px 6px;border-bottom:1px solid #333;color:#eee}
+.machine-table tr:last-child td{border-bottom:0}
+.machine-code{color:#f0d27c;font-weight:bold}
+.machine-lock{color:#c9b77e}
 </style>
+
 <div class="settings-wrap">
   <section class="settings-card">
     <h2>Account Settings</h2>
@@ -30,6 +37,29 @@
       <button class="settings-submit" type="submit">CHANGE PASSWORD</button>
     </form>
     <p class="settings-note">Use at least 8 characters. Your password is stored as a secure hash.</p>
+  </section>
+
+  <section class="investment-card">
+    <h3>Investment Machines</h3>
+    <p class="settings-sub">Machine prices and income figures configured on this platform.</p>
+    <div class="machine-table-wrap">
+      <table class="machine-table">
+        <thead>
+          <tr><th>Machine</th><th>Price</th><th>Daily Income</th><th>Days</th><th>Lock</th></tr>
+        </thead>
+        <tbody>
+          {% for m in machines %}
+          <tr>
+            <td class="machine-code">{{ m.code }}</td>
+            <td>UGX {{ "{:,.0f}".format(m.price) }}</td>
+            <td>UGX {{ "{:,.0f}".format(m.daily) }}</td>
+            <td>{{ m.days }}</td>
+            <td class="machine-lock">{{ m.lock }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </section>
 </div>
 {% endblock %}

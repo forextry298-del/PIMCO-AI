@@ -725,13 +725,13 @@ def withdraw():
             if 'fee' not in columns: con.execute("ALTER TABLE withdrawals ADD COLUMN fee REAL NOT NULL DEFAULT 0")
             if 'payout_amount' not in columns: con.execute("ALTER TABLE withdrawals ADD COLUMN payout_amount REAL NOT NULL DEFAULT 0")
             con.execute('BEGIN IMMEDIATE')
-            user = con.execute('SELECT wallet_balance FROM users WHERE id=?', (session['user_id'],)).fetchone()
-            available = float(user['wallet_balance'] or 0) if user else 0
+            user = con.execute('SELECT balance FROM users WHERE id=?', (session['user_id'],)).fetchone()
+            available = float(user['balance'] or 0) if user else 0
             if available < amount:
                 flash('Insufficient balance. Your available balance is UGX {:,.0f}.'.format(available), 'error')
                 return redirect(url_for('withdraw'))
             debit = con.execute(
-                'UPDATE users SET wallet_balance=COALESCE(wallet_balance,0)-? WHERE id=? AND COALESCE(wallet_balance,0)>=?',
+                'UPDATE users SET balance=COALESCE(balance,0)-? WHERE id=? AND COALESCE(balance,0)>=?',
                 (amount, session['user_id'], amount))
             if debit.rowcount != 1:
                 flash('Insufficient balance. Please try again.', 'error')
@@ -747,7 +747,7 @@ def withdraw():
     with db() as con:
         user = con.execute('SELECT * FROM users WHERE id=?', (session['user_id'],)).fetchone()
     return render_template('withdraw.html', active='my',
-        balance=float(user['wallet_balance'] or 0) if user else 0,
+        balance=float(user['balance'] or 0) if user else 0,
         registered_phone=user['phone'] if user and 'phone' in user.keys() else '')
 
 @app.route('/bill')
@@ -811,7 +811,7 @@ def admin():
                 if row:
                     status='approved' if action=='approve_withdrawal' else 'rejected'
                     con.execute('UPDATE withdrawals SET status=?,reviewed_at=CURRENT_TIMESTAMP WHERE id=?',(status,rid))
-                    if status=='rejected': con.execute('UPDATE users SET wallet_balance=COALESCE(wallet_balance,0)+? WHERE id=?',(row['amount'],row['user_id']))
+                    if status=='rejected': con.execute('UPDATE users SET balance=COALESCE(balance,0)+? WHERE id=?',(row['amount'],row['user_id']))
                     con.execute('UPDATE transactions SET status=? WHERE user_id=? AND kind="Withdrawal" AND reference=?',(status,row['user_id'],f'WDR-{rid}'))
             elif action=='block_user':
                 con.execute('UPDATE users SET password_hash=? WHERE id=?',(generate_password_hash(secrets.token_urlsafe(32)),rid))
@@ -863,7 +863,7 @@ def settings():
                     (generate_password_hash(new_password), session["user_id"])
                 )
                 message = ("success", "Password changed successfully.")
-    return render_template("settings.html", active="my", message=message)
+    return render_template("settings.html", active="my", message=message, machines=MACHINE_CATALOG)
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)
