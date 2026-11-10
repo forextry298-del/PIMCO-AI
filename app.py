@@ -463,32 +463,49 @@ def income():
     if not logged_in():
         return redirect(url_for("auth"))
     catalog = {m["code"]: m for m in MACHINE_CATALOG}
+    now = datetime.datetime.now(datetime.timezone.utc)
     with db() as con:
-        purchased = con.execute("""
-            SELECT p.machine_code, p.machine_name, p.price, p.purchased_at,
-                   p.daily_income, p.duration_days,
-                   a.matures_at AS free1_matures_at,
-                   a.settled_at AS free1_settled_at
+        rows = con.execute("""
+            SELECT p.*, a.matures_at AS free1_matures_at,
+            a.settled_at AS free1_settled_at,
+            ms.settled_at AS machine_settled_at
             FROM purchases p
             LEFT JOIN free1_assignments a ON a.purchase_id=p.id
-            WHERE p.user_id=?
-            ORDER BY p.id DESC
-        """, (session["user_id"],)).fetchall()
-    machines = []
-    for item in purchased:
-        machine = catalog.get(item["machine_code"], {})
+            LEFT JOIN machine_income_settlements ms ON ms.purchase_id=p.id
+            WHERE p.user_id=? ORDER BY p.id DESC
+        """,(session["user_id"],)).fetchall()
+    machines=[]
+    for r in rows:
+        m=catalog.get(r["machine_code"],{})
+        daily=float(r["daily_income"] or m.get("daily",0))
+        days=int(r["duration_days"] or m.get("days",0))
+        lock=int(r["lock_days"] or 0)
+        timer=None
+        expected=daily
+        if r["machine_code"]!="FREE1":
+            try:
+                start=datetime.datetime.fromisoformat(r["purchased_at"])
+                if start.tzinfo is None:
+                    start=start.replace(tzinfo=datetime.timezone.utc)
+                start=start.astimezone(datetime.timezone.utc)
+                elapsed=max(0,int((now-start).total_seconds()//86400))
+                if lock:
+                    timer=(start+datetime.timedelta(days=lock)).isoformat()
+                elif elapsed<days:
+                    timer=(start+datetime.timedelta(days=elapsed+1)).isoformat()
+                if elapsed>=days:
+                    expected=0
+            except Exception:
+                pass
         machines.append({
-            "code": item["machine_code"],
-            "name": item["machine_name"] or item["machine_code"],
-            "price": item["price"],
-            "purchased_at": item["purchased_at"],
-            "daily": item["daily_income"] or machine.get("daily", 0),
-            "days": item["duration_days"] or machine.get("days", 0),
-            "image": "free1.jpg" if item["machine_code"] == "FREE1" else machine.get("image", ""),
-            "matures_at": item["free1_matures_at"],
-            "settled_at": item["free1_settled_at"],
+            "code":r["machine_code"],"name":r["machine_name"] or r["machine_code"],
+            "price":r["price"],"purchased_at":r["purchased_at"],
+            "daily":daily,"today_earning":expected,"days":days,
+            "timer":timer,"settled":bool(r["machine_settled_at"]),
+            "image":"free1.jpg" if r["machine_code"]=="FREE1" else m.get("image",""),
+            "matures_at":r["free1_matures_at"],"settled_at":r["free1_settled_at"]
         })
-    return render_template("income.html", active="income", machines=machines)
+    return render_template("income.html",active="income",machines=machines)
 
 
 ADMIN_PHONE = "0758878297"
@@ -617,37 +634,44 @@ def process_free1_settlements():
                     )
 
 
+
 def process_daily_earnings():
-    # Idempotent: one credit per purchase per Uganda calendar day; call on each request.
-    today = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=3))).date().isoformat()
+    now = datetime.datetime.now(datetime.timezone.utc)
     with db() as con:
-        rows = con.execute("SELECT p.*,u.id AS owner FROM purchases p JOIN users u ON u.id=p.user_id").fetchall()
+        con.execute("BEGIN IMMEDIATE")
+        con.execute("""CREATE TABLE IF NOT EXISTS machine_income_settlements (
+            purchase_id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL,
+            amount REAL NOT NULL, settled_at TEXT NOT NULL)""")
+        rows = con.execute("SELECT * FROM purchases WHERE machine_code!='FREE1'").fetchall()
         for r in rows:
-            if r['machine_code'] == 'FREE1':
+            try:
+                start = datetime.datetime.fromisoformat(r["purchased_at"])
+                if start.tzinfo is None:
+                    start = start.replace(tzinfo=datetime.timezone.utc)
+                start = start.astimezone(datetime.timezone.utc)
+            except Exception:
                 continue
-            setting = con.execute("SELECT sold_out FROM machine_settings WHERE code=?", (r['machine_code'],)).fetchone()
-            # duration starts on purchase date; daily earnings continue through duration_days.
-            try: bought = datetime.datetime.fromisoformat(r['purchased_at']).date()
-            except Exception: bought = datetime.date.today()
-            elapsed = (datetime.date.fromisoformat(today)-bought).days
-            duration = int(r['duration_days'] or 0)
-            daily = float(r['daily_income'] or 0)
-            if daily <= 0 or duration <= 0 or elapsed < 1 or elapsed > duration: continue
-            lock_days = int(r['lock_days'] or 0)
-            if lock_days:
-                if elapsed != lock_days: continue
-                credit = daily * min(lock_days, duration)
-                earning_key = f"LOCKED-{today}"
-                source = 'locked_machine_income'
-            else:
-                credit = daily
-                earning_key = today
-                source = 'daily_machine_income'
-            cur = con.execute("INSERT OR IGNORE INTO daily_earnings(purchase_id,user_id,earning_date,amount) VALUES(?,?,?,?)", (r['id'],r['user_id'],earning_key,credit))
-            if cur.rowcount:
-                con.execute("UPDATE users SET balance=COALESCE(balance,0)+? WHERE id=?", (credit,r['user_id']))
-                con.execute("INSERT INTO wallet_ledger(user_id,entry_type,amount,source,reference) VALUES(?,?,?,?,?)", (r['user_id'],'credit',credit,source,r['machine_code']))
-                record_tx(con,r['user_id'],'Machine income',credit,'approved',r['machine_code'])
+            daily = float(r["daily_income"] or 0)
+            days = int(r["duration_days"] or 0)
+            lock = int(r["lock_days"] or 0)
+            if daily <= 0 or days <= 0:
+                continue
+            completed = min(days, max(0, int((now-start).total_seconds() // 86400)))
+            for n in range(1, completed+1):
+                cur = con.execute(
+                    "INSERT OR IGNORE INTO daily_earnings VALUES(NULL,?,?,?,?)",
+                    (r["id"], r["user_id"], f"CYCLE-{n:04d}", daily))
+                if cur.rowcount and not lock:
+                    con.execute("UPDATE users SET balance=COALESCE(balance,0)+? WHERE id=?", (daily,r["user_id"]))
+                    con.execute("INSERT INTO wallet_ledger(user_id,entry_type,amount,source,reference) VALUES(?,?,?,?,?)", (r["user_id"],"credit",daily,"daily_machine_income",r["machine_code"]))
+                    record_tx(con,r["user_id"],"Machine income",daily,"approved",r["machine_code"])
+            if lock and completed >= min(lock,days):
+                total = daily * min(lock,days)
+                cur = con.execute("INSERT OR IGNORE INTO machine_income_settlements VALUES(?,?,?,?)", (r["id"],r["user_id"],total,now.isoformat()))
+                if cur.rowcount:
+                    con.execute("UPDATE users SET balance=COALESCE(balance,0)+? WHERE id=?", (total,r["user_id"]))
+                    con.execute("INSERT INTO wallet_ledger(user_id,entry_type,amount,source,reference) VALUES(?,?,?,?,?)", (r["user_id"],"credit",total,"locked_machine_income",r["machine_code"]))
+                    record_tx(con,r["user_id"],"Locked machine income",total,"approved",r["machine_code"])
 
 @app.before_request
 def _earnings_tick():

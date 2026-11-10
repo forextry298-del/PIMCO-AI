@@ -26,8 +26,18 @@
             <div class="purchased-machine-values">
               <span><small>Price</small><b>UGX {{ "{:,.0f}".format(machine.price or 0) }}</b></span>
               <span><small>Daily income</small><b>UGX {{ "{:,.0f}".format(machine.daily or 0) }}</b></span>
+              <span><small>Today's expected</small><b>UGX {{ "{:,.0f}".format(machine.today_earning or 0) }}</b></span>
             </div>
             {% if machine.days %}<div class="purchased-machine-duration">Duration: {{ machine.days }} days</div>{% endif %}
+            {% if machine.code != 'FREE1' %}
+              <div class="purchased-machine-duration">
+                {% if machine.settled %}Locked income credited
+                {% elif machine.timer %}
+                  {% if machine.lock_days %}Lock maturity:{% else %}Next 24-hour earning:{% endif %}
+                  <span class="machine-countdown" data-time="{{ machine.timer }}">Loading...</span>
+                {% else %}Machine term completed{% endif %}
+              </div>
+            {% endif %}
             {% if machine.code == 'FREE1' %}
               <div class="purchased-machine-duration">
                 <strong>Locked total: UGX 4,500</strong>
@@ -53,6 +63,17 @@
 <script>
 (function () {
   function tick() {
+    document.querySelectorAll(".machine-countdown").forEach(function (node) {
+      var end = new Date(node.dataset.time).getTime();
+      var left = end - Date.now();
+      if (!Number.isFinite(end)) node.textContent = "Time unavailable";
+      else if (left <= 0) node.textContent = "Due — refresh to update";
+      else {
+        var d=Math.floor(left/86400000), h=Math.floor(left%86400000/3600000);
+        var m=Math.floor(left%3600000/60000), sec=Math.floor(left%60000/1000);
+        node.textContent=d+"d "+h+"h "+m+"m "+sec+"s";
+      }
+    });
     document.querySelectorAll(".free1-countdown").forEach(function (node) {
       var end = new Date(node.dataset.maturity).getTime();
       var left = end - Date.now();
