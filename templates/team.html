@@ -28,22 +28,42 @@
     <div class="team-stat-grid">
       <div class="team-stat-card">
         <span class="stat-icon"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2.5 20c.3-4 2.5-6 6.5-6s6.2 2 6.5 6m.2-5c3.5-.4 5.6 1.3 5.8 5"/></svg></span>
-        <div><strong>0</strong><small>Total team</small></div>
+        <div><strong>{{ total_team }}</strong><small>Total team</small></div>
       </div>
       <div class="team-stat-card">
         <span class="stat-icon"><svg viewBox="0 0 24 24"><path d="M3 9h18v12H3zM2 6h20v4H2zM12 6v15M12 6H7a2.5 2.5 0 1 1 2.5-2.5C9.5 5 12 6 12 6Zm0 0h5a2.5 2.5 0 1 0-2.5-2.5C14.5 5 12 6 12 6Z"/></svg></span>
-        <div><strong>UGX 0</strong><small>Team income</small></div>
+        <div><strong>UGX {{ "{:,.0f}".format(team_income) }}</strong><small>Team income</small></div>
       </div>
     </div>
   </div>
 
   <div class="team-level-heading"><h2>Team details</h2><span>Commission levels</span></div>
-  {% for level,pct in [('Level 1','10%'),('Level 2','5%'),('Level 3','2%')] %}
+  {% for item in level_stats %}
   <section class="team-level-card">
-    <header><span><i class="level-dot">{{ loop.index }}</i>{{ level }}</span><strong>{{ pct }} commission</strong></header>
-    <div class="level-stats"><div><strong>0</strong><small>Team size</small></div><div><strong>UGX 0</strong><small>Bonus</small></div></div>
+    <header>
+      <span><i class="level-dot">{{ item.level }}</i>{{ item.label }}</span>
+      <strong>{{ item.pct }}% commission</strong>
+    </header>
+    <div class="level-stats">
+      <div><strong>{{ item.count }}</strong><small>Team size</small></div>
+      <div><strong>UGX {{ "{:,.0f}".format(item.bonus) }}</strong><small>Bonus</small></div>
+    </div>
   </section>
   {% endfor %}
+
+  <section class="team-level-card">
+    <header><span>Invited members</span><strong>{{ members|length }} members</strong></header>
+    {% if members %}
+      {% for member in members %}
+      <div class="level-stats">
+        <div><strong>{{ member.phone }}</strong><small>Level {{ member.level }}</small></div>
+        <div><small>Member ID: {{ member.id }}</small></div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p>No invited members yet.</p>
+    {% endif %}
+  </section>
 </section>
 <script>
 document.querySelectorAll('.copy-btn').forEach(function(button){

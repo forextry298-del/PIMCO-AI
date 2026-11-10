@@ -401,11 +401,61 @@ def invite_register(code):
 
 @app.route("/team")
 def team():
-    if not logged_in(): return redirect(url_for("auth"))
-    with db() as con:
-        user = con.execute("SELECT referral_code FROM users WHERE id=?", (session["user_id"],)).fetchone()
-    return render_template("team.html", active="team", referral=user["referral_code"] if user else "")
+    if not logged_in():
+        return redirect(url_for("auth"))
 
+    uid = session["user_id"]
+
+    with db() as con:
+        user = con.execute(
+            "SELECT referral_code FROM users WHERE id=?", (uid,)
+        ).fetchone()
+
+        members = con.execute("""
+            WITH RECURSIVE team(id, phone, level, path) AS (
+                SELECT id, phone, 1, printf('/%d/', id)
+                FROM users WHERE referred_by=?
+                UNION ALL
+                SELECT u.id, u.phone, t.level+1,
+                       t.path || u.id || '/'
+                FROM users u
+                JOIN team t ON u.referred_by=t.id
+                WHERE t.level < 3
+                  AND instr(t.path, printf('/%d/', u.id)) = 0
+            )
+            SELECT id, phone, level
+            FROM team
+            ORDER BY level, id
+        """, (uid,)).fetchall()
+
+        commissions = con.execute("""
+            SELECT level, COALESCE(SUM(amount),0) AS total
+            FROM team_commissions
+            WHERE beneficiary_id=?
+            GROUP BY level
+        """, (uid,)).fetchall()
+
+    commission_totals = {int(r["level"]): float(r["total"]) for r in commissions}
+    level_stats = []
+
+    for level, pct in [(1, 10), (2, 5), (3, 2)]:
+        level_stats.append({
+            "level": level,
+            "label": f"Level {level}",
+            "pct": pct,
+            "count": sum(1 for m in members if int(m["level"]) == level),
+            "bonus": commission_totals.get(level, 0)
+        })
+
+    return render_template(
+        "team.html",
+        active="team",
+        referral=user["referral_code"] if user else "",
+        members=members,
+        level_stats=level_stats,
+        total_team=len(members),
+        team_income=sum(commission_totals.values())
+    )
 
 
 @app.route("/income")
@@ -695,7 +745,7 @@ def manager():
 
 
 # Existing referral rates retained: 2% for each of the three levels.
-REFERRAL_LEVEL_PERCENTAGES = {1: 2.0, 2: 2.0, 3: 2.0}
+REFERRAL_LEVEL_PERCENTAGES = {1: 10.0, 2: 5.0, 3: 2.0}
 def credit_team_commissions(con, deposit_id, depositor_id, deposit_amount):
     con.execute("CREATE TABLE IF NOT EXISTS team_commissions (id INTEGER PRIMARY KEY AUTOINCREMENT, deposit_id INTEGER NOT NULL, depositor_id INTEGER NOT NULL, beneficiary_id INTEGER NOT NULL, level INTEGER NOT NULL, amount REAL NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE(deposit_id,beneficiary_id,level))")
     row=con.execute("SELECT referred_by FROM users WHERE id=?",(depositor_id,)).fetchone()
@@ -709,6 +759,8 @@ def credit_team_commissions(con, deposit_id, depositor_id, deposit_amount):
             if cur.rowcount:
                 con.execute("UPDATE users SET balance=COALESCE(balance,0)+? WHERE id=?",(commission,parent_id))
                 con.execute("INSERT INTO wallet_ledger(user_id,entry_type,amount,source,reference) VALUES(?,?,?,?,?)",(parent_id,"credit",commission,"team_deposit_commission",f"DEP-{deposit_id}-LV{level}"))
+                record_tx(con, parent_id, "Team deposit commission", commission,
+                          "approved", f"DEP-{deposit_id}-LV{level}")
         parent=con.execute("SELECT referred_by FROM users WHERE id=?",(parent_id,)).fetchone()
         parent_id=parent["referred_by"] if parent else None
 
