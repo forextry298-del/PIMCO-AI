@@ -1,4 +1,12 @@
 {% extends "base.html" %}{% block content %}
+<style>
+.investment-plans-banner{max-width:1100px;margin:12px auto 18px;padding:0 10px}
+.investment-plans-banner img{display:block;width:100%;height:auto;border-radius:12px;border:1px solid #d6b64f;box-shadow:0 6px 22px rgba(0,0,0,.25)}
+</style>
+<div class="investment-plans-banner">
+  <img src="{{ url_for('static', filename='images/investment-plans.png') }}" alt="PIMCO AI investment plans: Series A, B, LV, K, D and VIP">
+</div>
+
 <div class="ai-catalog">
   <nav class="ai-series-tabs" aria-label="Machine series">
     <a class="{{ 'selected' if series == 'ALL' else '' }}" href="{{ url_for('ai', series='ALL') }}">All</a>
