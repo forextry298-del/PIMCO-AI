@@ -151,8 +151,8 @@ def home():
     return render_template("home.html",active="home",show_login_notice=show_login_notice,metrics=metrics,admin_access=admin_access)
 @app.route("/auth", methods=["GET", "POST"])
 def auth():
-    mode = request.args.get("mode", "signin")
-    invite_code = request.args.get("ref", "").strip().upper()
+    mode = request.args.get("mode") or ("signup" if request.args.get("type") == "2" else "signin")
+    invite_code = request.args.get("ref", request.args.get("code", "")).strip().upper()
     if request.method == "POST":
         mode = request.form.get("mode", "signin")
         identity = request.form.get("identity", "").strip()
@@ -639,10 +639,9 @@ def admin():
     return render_template('admin.html',active='my',deposits=deposits,withdrawals=withdrawals,users=users,machines=MACHINE_CATALOG)
 
 
-@app.route("/pages/login/index")
+@app.route("/pages/login/index", methods=["GET", "POST"])
 def pimco_legacy_invite():
-    code = request.args.get("code", "").strip()
-    return redirect(url_for("auth", mode="signup", ref=code))
+    return auth()
 
 
 
