@@ -28,6 +28,19 @@
               <span><small>Daily income</small><b>UGX {{ "{:,.0f}".format(machine.daily or 0) }}</b></span>
             </div>
             {% if machine.days %}<div class="purchased-machine-duration">Duration: {{ machine.days }} days</div>{% endif %}
+            {% if machine.code == 'FREE1' %}
+              <div class="purchased-machine-duration">
+                <strong>Locked total: UGX 4,500</strong>
+              </div>
+              {% if machine.settled_at %}
+                <div class="purchased-machine-duration">Completed — credited to Balance</div>
+              {% else %}
+                <div class="purchased-machine-duration">
+                  Maturity:
+                  <span class="free1-countdown" data-maturity="{{ machine.matures_at }}">Loading...</span>
+                </div>
+              {% endif %}
+            {% endif %}
           </div>
         </article>
       {% endfor %}
@@ -37,4 +50,27 @@
     {% endif %}
   </div>
 </section>
+<script>
+(function () {
+  function tick() {
+    document.querySelectorAll(".free1-countdown").forEach(function (node) {
+      var end = new Date(node.dataset.maturity).getTime();
+      var left = end - Date.now();
+      if (!Number.isFinite(end)) {
+        node.textContent = "Time unavailable";
+      } else if (left <= 0) {
+        node.textContent = "Matured — refresh to update Balance";
+      } else {
+        var d = Math.floor(left / 86400000);
+        var h = Math.floor(left % 86400000 / 3600000);
+        var m = Math.floor(left % 3600000 / 60000);
+        var s = Math.floor(left % 60000 / 1000);
+        node.textContent = d + "d " + h + "h " + m + "m " + s + "s";
+      }
+    });
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
 {% endblock %}

@@ -107,6 +107,22 @@ def make_invite_code(con):
     raise RuntimeError("Unable to generate a unique invitation code")
 
 init_db()
+
+FREE1_LOCK_DAYS = 10
+FREE1_DAILY_INCOME = 450
+FREE1_TOTAL_INCOME = 4500
+
+with db() as con:
+    con.execute("""
+        CREATE TABLE IF NOT EXISTS free1_assignments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL UNIQUE,
+            purchase_id INTEGER NOT NULL UNIQUE,
+            started_at TEXT NOT NULL,
+            matures_at TEXT NOT NULL,
+            settled_at TEXT
+        )
+    """)
 with db() as con:
     seen=set()
     for row in con.execute("SELECT id, referral_code FROM users ORDER BY id").fetchall():
@@ -399,10 +415,14 @@ def income():
     catalog = {m["code"]: m for m in MACHINE_CATALOG}
     with db() as con:
         purchased = con.execute("""
-            SELECT machine_code, machine_name, price, purchased_at
-            FROM purchases
-            WHERE user_id=?
-            ORDER BY id DESC
+            SELECT p.machine_code, p.machine_name, p.price, p.purchased_at,
+                   p.daily_income, p.duration_days,
+                   a.matures_at AS free1_matures_at,
+                   a.settled_at AS free1_settled_at
+            FROM purchases p
+            LEFT JOIN free1_assignments a ON a.purchase_id=p.id
+            WHERE p.user_id=?
+            ORDER BY p.id DESC
         """, (session["user_id"],)).fetchall()
     machines = []
     for item in purchased:
@@ -412,9 +432,11 @@ def income():
             "name": item["machine_name"] or item["machine_code"],
             "price": item["price"],
             "purchased_at": item["purchased_at"],
-            "daily": machine.get("daily", 0),
-            "days": machine.get("days", 0),
-            "image": machine.get("image", ""),
+            "daily": item["daily_income"] or machine.get("daily", 0),
+            "days": item["duration_days"] or machine.get("days", 0),
+            "image": "free1.jpg" if item["machine_code"] == "FREE1" else machine.get("image", ""),
+            "matures_at": item["free1_matures_at"],
+            "settled_at": item["free1_settled_at"],
         })
     return render_template("income.html", active="income", machines=machines)
 
@@ -458,12 +480,101 @@ def is_admin():
 def record_tx(con, uid, kind, amount, status, reference=""):
     con.execute("INSERT INTO transactions(user_id,kind,amount,status,reference) VALUES(?,?,?,?,?)", (uid,kind,amount,status,reference))
 
+
+def uganda_now():
+    return datetime.datetime.now(
+        datetime.timezone(datetime.timedelta(hours=3))
+    )
+
+def ensure_free1_assignment(user_id):
+    with db() as con:
+        exists = con.execute(
+            "SELECT id FROM free1_assignments WHERE user_id=?",
+            (user_id,)
+        ).fetchone()
+        if exists:
+            return
+
+        started = uganda_now()
+        matures = started + datetime.timedelta(days=10)
+
+        cur = con.execute("""
+            INSERT INTO purchases
+            (user_id,machine_code,machine_name,price,payment_source,
+             purchased_at,daily_income,duration_days,lock_days)
+            VALUES (?,?,?,?,?,?,?,?,?)
+        """, (
+            user_id, "FREE1", "FREE1 Free Machine", 0,
+            "balance", started.isoformat(), 450, 10, 10
+        ))
+
+        con.execute("""
+            INSERT INTO free1_assignments
+            (user_id,purchase_id,started_at,matures_at)
+            VALUES (?,?,?,?)
+        """, (
+            user_id, cur.lastrowid, started.isoformat(), matures.isoformat()
+        ))
+
+def process_free1_settlements():
+    now = uganda_now()
+    with db() as con:
+        assignments = con.execute(
+            "SELECT * FROM free1_assignments WHERE settled_at IS NULL"
+        ).fetchall()
+
+        for a in assignments:
+            started = datetime.datetime.fromisoformat(a["started_at"])
+            maturity = datetime.datetime.fromisoformat(a["matures_at"])
+            elapsed = (now.date() - started.date()).days
+            days = min(10, max(1, elapsed + 1))
+
+            for i in range(days):
+                earning_date = (
+                    started.date() + datetime.timedelta(days=i)
+                ).isoformat()
+                con.execute("""
+                    INSERT OR IGNORE INTO daily_earnings
+                    (purchase_id,user_id,earning_date,amount)
+                    VALUES (?,?,?,?)
+                """, (a["purchase_id"], a["user_id"], earning_date, 450))
+
+            if now >= maturity:
+                cur = con.execute("""
+                    UPDATE free1_assignments SET settled_at=?
+                    WHERE id=? AND settled_at IS NULL
+                """, (now.isoformat(), a["id"]))
+
+                if cur.rowcount == 1:
+                    con.execute("""
+                        UPDATE users
+                        SET balance=COALESCE(balance,0)+4500
+                        WHERE id=?
+                    """, (a["user_id"],))
+
+                    con.execute("""
+                        INSERT INTO wallet_ledger
+                        (user_id,entry_type,amount,source,reference)
+                        VALUES (?,?,?,?,?)
+                    """, (
+                        a["user_id"], "credit", 4500,
+                        "FREE1_locked_income", "FREE1"
+                    ))
+
+                    record_tx(
+                        con, a["user_id"], "FREE1 locked income",
+                        4500, "approved", "FREE1"
+                    )
+
+
 def process_daily_earnings():
     # Idempotent: one credit per purchase per Uganda calendar day; call on each request.
     today = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=3))).date().isoformat()
     with db() as con:
         rows = con.execute("SELECT p.*,u.id AS owner FROM purchases p JOIN users u ON u.id=p.user_id").fetchall()
         for r in rows:
+            if r['machine_code'] == 'FREE1':
+                continue
             setting = con.execute("SELECT sold_out FROM machine_settings WHERE code=?", (r['machine_code'],)).fetchone()
             # duration starts on purchase date; daily earnings continue through duration_days.
             try: bought = datetime.datetime.fromisoformat(r['purchased_at']).date()
@@ -492,6 +603,9 @@ def process_daily_earnings():
 def _earnings_tick():
     if request.endpoint not in ('static', 'auth', 'logout'):
         process_daily_earnings()
+        if logged_in():
+            ensure_free1_assignment(session["user_id"])
+        process_free1_settlements()
 
 @app.route('/deposit', methods=['GET','POST'])
 def deposit():
